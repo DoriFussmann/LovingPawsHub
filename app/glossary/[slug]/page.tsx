@@ -30,7 +30,6 @@ export async function generateMetadata({
   const config = await getSiteConfig();
   const siteName = cfg(config, "site_name");
   const termUrl = `${siteUrl}/glossary/${params.slug}/`;
-  const glossaryUrl = `${siteUrl}/glossary/`;
 
   try {
     const supabase = createServiceClient();
