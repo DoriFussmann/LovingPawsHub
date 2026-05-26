@@ -27,6 +27,12 @@ export default function Header() {
             glossary
           </Link>
           <Link
+            href="/tools"
+            className="text-sm font-light text-muted-foreground hover:text-foreground transition-colors"
+          >
+            tools
+          </Link>
+          <Link
             href="/about"
             className="text-sm font-light text-muted-foreground hover:text-foreground transition-colors"
           >
