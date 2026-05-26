@@ -12,7 +12,7 @@ export default function NotFound() {
         page not found.
       </h1>
       <p className="text-sm font-light text-muted-foreground mb-10">
-        This page doesn&apos;t exist or has been moved.
+        This page doesn&apos;t exist or has been moved. Head back to Closing Day Ready.
       </p>
       <div className="flex items-center justify-center gap-4">
         <Link

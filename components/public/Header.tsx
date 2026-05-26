@@ -13,7 +13,7 @@ export default function Header() {
           <span className="w-6 h-6 rounded-md bg-accent flex items-center justify-center text-accent-foreground text-[11px] font-medium tracking-tight shrink-0">
             cd
           </span>
-          home
+          closing day ready
         </Link>
 
         <nav className="flex items-center gap-6">

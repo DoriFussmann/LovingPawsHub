@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import JourneyModal from "@/components/public/JourneyModal";
 
 interface RecentArticle {
   id: string;
@@ -53,6 +55,8 @@ export default function HeroSection({
   ctaPrimary: ctaPrimaryProp,
   ctaSecondary: ctaSecondaryProp,
 }: HeroSectionProps) {
+  const [journeyOpen, setJourneyOpen] = useState(false);
+
   const industryName = (industryNameProp || "your industry").toLowerCase();
   const siteName = (siteNameProp || "").toLowerCase();
   const headline = (headlineProp || siteName).toLowerCase();
@@ -73,7 +77,7 @@ export default function HeroSection({
       : FALLBACK_ROWS.map((r) => ({ ...r, href: "/articles" }));
 
   return (
-    <section className="flex items-start pt-24 pb-20 overflow-hidden">
+    <section className="flex items-start pt-16 pb-20 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
@@ -100,9 +104,9 @@ export default function HeroSection({
             </p>
 
             <div className="flex items-center gap-3 flex-wrap">
-              <Link
-                href="/articles"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground text-sm font-light hover:bg-sage-800 transition-colors"
+              <button
+                onClick={() => setJourneyOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-light hover:bg-sage-800 transition-colors"
               >
                 {ctaPrimary}
                 <svg
@@ -117,15 +121,20 @@ export default function HeroSection({
                 >
                   <path d="M2 6h8M7 3l3 3-3 3" />
                 </svg>
-              </Link>
+              </button>
 
               <Link
                 href="/articles"
-                className="inline-flex items-center px-5 py-2.5 rounded-full border border-accent/30 text-sm font-light text-accent hover:bg-sage-50 hover:border-accent/60 transition-colors"
+                className="inline-flex items-center px-5 py-2.5 rounded-lg border border-accent/30 text-sm font-light text-accent hover:bg-sage-50 hover:border-accent/60 transition-colors"
               >
                 {ctaSecondary}
               </Link>
             </div>
+
+            <JourneyModal
+              open={journeyOpen}
+              onClose={() => setJourneyOpen(false)}
+            />
           </motion.div>
 
           {/* ── Right column — app preview card (desktop only) ── */}
