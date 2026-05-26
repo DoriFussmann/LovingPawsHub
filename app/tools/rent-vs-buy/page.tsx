@@ -354,7 +354,7 @@ export default function RentVsBuyPage() {
             <ComparisonChart data={result.yearlyData} years={parseInt(years)} />
 
             <p className="text-[11px] text-muted-foreground mt-4 leading-relaxed">
-              Net costs account for equity built, investment returns on the down payment alternative, and selling costs (~6%). This is a simplified model — it doesn't include your specific tax situation, rent control, or local market conditions.
+              Net costs account for equity built, investment returns on the down payment alternative, and selling costs (~6%). This is a simplified model &mdash; it doesn&apos;t include your specific tax situation, rent control, or local market conditions.
             </p>
           </ResultsPanel>
         )}
