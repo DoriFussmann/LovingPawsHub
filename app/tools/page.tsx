@@ -10,6 +10,12 @@ export const metadata: Metadata = {
 
 const TOOLS = [
   {
+    href: "/tools/home-tracker",
+    name: "Home Tracker",
+    description: "Track your inspection, title, insurance, mortgage, and every other step of your purchase — all in one place, with an AI assistant on call.",
+    tag: "AI-Powered",
+  },
+  {
     href: "/tools/mortgage-breakdown",
     name: "Mortgage Payment Breakdown",
     description: "See exactly where your monthly payment goes — principal, interest, PMI, taxes, and insurance.",

@@ -299,3 +299,140 @@ ALTER TABLE link_check_log DISABLE ROW LEVEL SECURITY;
 ALTER TABLE glossary_terms DISABLE ROW LEVEL SECURITY;
 ALTER TABLE settings DISABLE ROW LEVEL SECURITY;
 ALTER TABLE site_config DISABLE ROW LEVEL SECURITY;
+
+-- ── HomeTracker ───────────────────────────────────────────────────────────────
+-- User-scoped property tracking. Requires Supabase Auth (auth.users).
+-- Run after enabling Email auth in Supabase dashboard → Authentication → Providers.
+-- Also create a Storage bucket named "home-tracker" (private) with the policies below.
+
+CREATE TABLE properties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users NOT NULL,
+  address TEXT NOT NULL,
+  purchase_price NUMERIC,
+  closing_date DATE,
+  images TEXT[],
+  next_steps JSONB DEFAULT '[]',   -- [{id, text, checked}]
+  action_items JSONB DEFAULT '[]', -- [{id, text, due_date, checked}]
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE topics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  icon TEXT,
+  status TEXT DEFAULT 'not_started', -- not_started | in_progress | pending | completed | issue
+  summary TEXT,
+  details JSONB DEFAULT '{}',
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  topic_id UUID REFERENCES topics ON DELETE CASCADE,
+  property_id UUID REFERENCES properties ON DELETE CASCADE,
+  file_name TEXT,
+  file_url TEXT,
+  extracted_fields JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE log_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties ON DELETE CASCADE,
+  topic_id UUID REFERENCES topics,
+  content TEXT NOT NULL,
+  ai_summary TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE topics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE log_entries ENABLE ROW LEVEL SECURITY;
+
+-- Properties: direct user_id check
+CREATE POLICY "Users manage own properties"
+  ON properties FOR ALL
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- Topics: verified through property ownership
+CREATE POLICY "Users manage own topics"
+  ON topics FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM properties
+      WHERE properties.id = topics.property_id
+      AND properties.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM properties
+      WHERE properties.id = topics.property_id
+      AND properties.user_id = auth.uid()
+    )
+  );
+
+-- Documents: verified through property ownership
+CREATE POLICY "Users manage own documents"
+  ON documents FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM properties
+      WHERE properties.id = documents.property_id
+      AND properties.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM properties
+      WHERE properties.id = documents.property_id
+      AND properties.user_id = auth.uid()
+    )
+  );
+
+-- Log entries: verified through property ownership
+CREATE POLICY "Users manage own log entries"
+  ON log_entries FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM properties
+      WHERE properties.id = log_entries.property_id
+      AND properties.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM properties
+      WHERE properties.id = log_entries.property_id
+      AND properties.user_id = auth.uid()
+    )
+  );
+
+-- Storage RLS policies (run in Supabase SQL editor after creating the home-tracker bucket):
+--
+-- CREATE POLICY "Users upload to own folder" ON storage.objects
+--   FOR INSERT TO authenticated
+--   WITH CHECK (
+--     bucket_id = 'home-tracker'
+--     AND (storage.foldername(name))[1] = auth.uid()::text
+--   );
+--
+-- CREATE POLICY "Users read own files" ON storage.objects
+--   FOR SELECT TO authenticated
+--   USING (
+--     bucket_id = 'home-tracker'
+--     AND (storage.foldername(name))[1] = auth.uid()::text
+--   );
+--
+-- CREATE POLICY "Users delete own files" ON storage.objects
+--   FOR DELETE TO authenticated
+--   USING (
+--     bucket_id = 'home-tracker'
+--     AND (storage.foldername(name))[1] = auth.uid()::text
+--   );
