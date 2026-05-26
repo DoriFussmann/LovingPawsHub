@@ -106,7 +106,6 @@ export default function TimelineBuilderPage() {
       setStream(null);
 
       // Compute months away from today
-      const now = new Date();
       const targetIdx = MONTH_OPTIONS.findIndex((o) => o.value === targetDate);
       const monthsAway = targetIdx >= 0 ? targetIdx + 2 : 6;
 

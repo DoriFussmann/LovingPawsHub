@@ -38,9 +38,10 @@ export default function TopicDetail({
 }) {
   const [status, setStatus] = useState(topic.status);
   const [notes, setNotes] = useState(topic.notes ?? "");
-  const [details, setDetails] = useState<Record<string, string>>(
-    { ...(topic.details ?? {}), ...(extractedFields ?? {}) }
-  );
+  const details: Record<string, string> = {
+    ...(topic.details ?? {}),
+    ...(extractedFields ?? {}),
+  };
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
