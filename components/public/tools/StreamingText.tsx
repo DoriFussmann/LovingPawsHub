@@ -42,7 +42,7 @@ function renderLine(line: string, i: number): React.ReactNode {
 
   // Heading with inline content after the bold part: **Label:** rest of text
   if (/^\*\*[^*]+\*\*:/.test(trimmed)) {
-    const match = trimmed.match(/^\*\*([^*]+)\*\*:\s*(.*)/s);
+    const match = trimmed.match(/^\*\*([^*]+)\*\*:\s*(.*)/);
     if (match) {
       return (
         <p key={i} className="text-sm font-light text-foreground/90 leading-relaxed mb-2">
