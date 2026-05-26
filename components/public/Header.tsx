@@ -8,7 +8,7 @@ export default function Header() {
       <div className="max-w-[1280px] mx-auto px-8 py-5 flex items-center justify-between">
         <Link
           href="/"
-          className="text-sm font-light tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+          className="text-sm font-light tracking-wide border border-border rounded-md px-3 py-1.5 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
         >
           home
         </Link>
