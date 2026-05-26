@@ -12,8 +12,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     description: cfg(config, "site_description", ""),
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#0f0f0f",
+    background_color: "#f6f4ee",
+    theme_color: "#2e4929",
     icons: [
       {
         src: "/android-chrome-192x192.png",

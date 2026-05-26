@@ -80,12 +80,18 @@ const US_STATES = [
 
 // ─── Cost computation ────────────────────────────────────────────────────────
 
+type CostCategory = "Lender fees" | "Title & settlement" | "Prepaid & escrow" | "Taxes & credits";
+
 interface LineItem {
   name: string;
   explanation: string;
   low: number;
   high: number;
+  negotiable?: boolean;
+  category: CostCategory;
 }
+
+const CATEGORIES: CostCategory[] = ["Lender fees", "Title & settlement", "Prepaid & escrow", "Taxes & credits"];
 
 function computeClosingCosts(
   price: number,
@@ -101,66 +107,80 @@ function computeClosingCosts(
       explanation: "What the lender charges to process and underwrite your loan. Usually 0.5–1% of the loan amount. Negotiate this — it's not fixed.",
       low: loan * 0.005,
       high: loan * 0.01,
+      negotiable: true,
+      category: "Lender fees",
     },
     {
       name: "Appraisal",
       explanation: "A licensed appraiser inspects the home and gives the bank their own independent opinion of value. Required on almost every purchase.",
       low: 450,
       high: 750,
+      category: "Lender fees",
     },
     {
       name: "Credit report fee",
       explanation: "The lender pulls your credit report from all three bureaus and charges you for it. Small but unavoidable.",
       low: 25,
       high: 75,
+      category: "Lender fees",
     },
     {
       name: "Title search",
       explanation: "A title company researches the property's ownership history to make sure there are no liens, unpaid taxes, or competing claims to ownership.",
       low: 200,
       high: 400,
+      category: "Title & settlement",
     },
     {
       name: "Owner's title insurance",
       explanation: "A one-time premium that protects you (not the bank) if a title problem surfaces after closing. Optional but strongly recommended.",
       low: price * 0.003,
       high: price * 0.005,
+      negotiable: true,
+      category: "Title & settlement",
     },
     {
       name: "Lender's title insurance",
       explanation: "Required by the bank — this policy protects their investment, not yours. Separate from owner's title insurance.",
       low: loan * 0.002,
       high: loan * 0.004,
+      category: "Title & settlement",
     },
     {
       name: "Escrow / settlement fee",
       explanation: "The escrow company or closing attorney coordinates the entire closing — holds funds, prepares documents, and ensures the transfer happens correctly.",
       low: 500,
       high: 1200,
+      negotiable: true,
+      category: "Title & settlement",
     },
     {
       name: "Recording fees",
       explanation: "The county charges a fee to officially record the deed and mortgage in public records. Varies by county.",
       low: 100,
       high: 350,
+      category: "Title & settlement",
     },
     {
       name: "Prepaid interest",
       explanation: "Mortgage interest is paid in arrears, so at closing you pay the interest that accrues from your closing date to the end of that month.",
       low: (loan * 0.0675) / 365 * 1,
       high: (loan * 0.0675) / 365 * 30,
+      category: "Prepaid & escrow",
     },
     {
       name: "Homeowners insurance (prepaid)",
       explanation: "Lenders require you to prepay 12 months of homeowners insurance at closing and deposit 2 months into escrow as a cushion.",
       low: price * 0.005 * (14 / 12),
       high: price * 0.008 * (14 / 12),
+      category: "Prepaid & escrow",
     },
     {
       name: "Property tax (escrow deposit)",
       explanation: "Your lender collects 2–3 months of estimated property taxes upfront and holds them in escrow to ensure taxes are paid on time.",
       low: (price * 0.008) / 12 * 2,
       high: (price * 0.015) / 12 * 3,
+      category: "Prepaid & escrow",
     },
   ];
 
@@ -172,6 +192,7 @@ function computeClosingCosts(
       explanation: `${state} charges a transfer tax when real estate changes hands. This is split between buyer and seller in some states; in others it falls entirely on the buyer.`,
       low: price * taxInfo.rate * 0.5,
       high: price * taxInfo.rate,
+      category: "Taxes & credits",
     });
   }
 
@@ -182,6 +203,7 @@ function computeClosingCosts(
       explanation: "FHA loans require an upfront premium of 1.75% of the loan amount at closing. This can be rolled into the loan, but it still affects your loan balance.",
       low: loan * 0.0175,
       high: loan * 0.0175,
+      category: "Lender fees",
     });
   }
 
@@ -191,6 +213,7 @@ function computeClosingCosts(
       explanation: "VA loans don't require PMI, but the VA charges a one-time funding fee instead. First-time use with no down payment is 2.15% of the loan amount.",
       low: loan * 0.0115,
       high: loan * 0.0215,
+      category: "Lender fees",
     });
   }
 
@@ -198,9 +221,10 @@ function computeClosingCosts(
   if (firstTimeBuyer) {
     items.push({
       name: "First-time buyer assistance (potential credit)",
-      explanation: "Many states and counties offer closing cost assistance grants or credits for first-time buyers. This is an estimate of what you may qualify for — check your state HFA website.",
+      explanation: "Many states and counties offer closing cost assistance grants or credits for first-time buyers. This is an estimate — check your state HFA website for programs you actually qualify for.",
       low: -7500,
       high: -1500,
+      category: "Taxes & credits",
     });
   }
 
@@ -254,6 +278,12 @@ export default function ClosingCostEstimatorPage() {
 
   const totalLow = items.reduce((s, i) => s + i.low, 0);
   const totalHigh = items.reduce((s, i) => s + i.high, 0);
+
+  // Cash to close = closing costs + 10% down payment (matching the assumption in computeClosingCosts)
+  const parsedPrice = parseFloat(price.replace(/,/g, "")) || 0;
+  const downPayment = parsedPrice * 0.1;
+  const cashToCloseLow = totalLow + downPayment;
+  const cashToCloseHigh = totalHigh + downPayment;
 
   return (
     <ToolShell
@@ -329,44 +359,76 @@ export default function ClosingCostEstimatorPage() {
 
         {phase === "results" && (
           <ResultsPanel onReset={() => setPhase("input")} resetLabel="Change inputs">
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            {/* Two headline numbers */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
               <div>
-                <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">estimated total range</p>
+                <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">closing costs</p>
                 <p className="text-3xl font-extralight tracking-tight">
                   {fmt(totalLow)} – {fmt(totalHigh)}
                 </p>
-                <p className="text-xs font-light text-muted-foreground mt-1">
-                  These are estimates. Your actual fees will be on your Loan Estimate within 3 days of applying.
+                <p className="text-[11px] text-muted-foreground mt-1">Fees at the closing table only</p>
+              </div>
+              <div className="border border-foreground/15 rounded-md px-4 py-3">
+                <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">cash to close</p>
+                <p className="text-2xl font-extralight tracking-tight">
+                  {fmt(cashToCloseLow)} – {fmt(cashToCloseHigh)}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Closing costs + 10% down payment ({fmt(downPayment)})
                 </p>
               </div>
-              <div className="shrink-0 text-right">
-                <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">line items</p>
-                <p className="text-2xl font-extralight">{items.length}</p>
-              </div>
             </div>
 
-            <div className="space-y-0 divide-y divide-border/40">
-              {items.map((item, i) => (
-                <div key={i} className="py-4">
-                  <div className="flex items-start justify-between gap-6">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-light text-foreground">{item.name}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                        {item.explanation}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-sm font-light text-foreground whitespace-nowrap">
-                        {item.low === item.high ? fmt(item.low) : `${fmt(item.low)} – ${fmt(item.high)}`}
-                      </p>
-                    </div>
+            <p className="text-[11px] text-muted-foreground mb-5">
+              These are estimates. Your actual fees will appear on the Loan Estimate within 3 days of applying.
+            </p>
+
+            {/* Grouped line items */}
+            {CATEGORIES.map((cat) => {
+              const catItems = items.filter((item) => item.category === cat);
+              if (catItems.length === 0) return null;
+              const catLow = catItems.reduce((s, i) => s + i.low, 0);
+              const catHigh = catItems.reduce((s, i) => s + i.high, 0);
+              return (
+                <div key={cat} className="mb-5">
+                  <div className="flex items-center justify-between mb-1 pb-1.5 border-b border-border/60">
+                    <p className="text-[10px] tracking-widest uppercase text-foreground/50">{cat}</p>
+                    <p className="text-[10px] font-light text-muted-foreground whitespace-nowrap">
+                      {catLow === catHigh ? fmt(catLow) : `${fmt(catLow)} – ${fmt(catHigh)}`}
+                    </p>
+                  </div>
+                  <div className="space-y-0 divide-y divide-border/30">
+                    {catItems.map((item, i) => (
+                      <div key={i} className="py-3">
+                        <div className="flex items-start justify-between gap-6">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-light text-foreground">{item.name}</p>
+                              {item.negotiable && (
+                                <span className="text-[9px] tracking-widest uppercase border border-border/60 text-muted-foreground rounded px-1.5 py-0.5 shrink-0">
+                                  negotiable
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                              {item.explanation}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="text-sm font-light text-foreground whitespace-nowrap">
+                              {item.low === item.high ? fmt(item.low) : `${fmt(item.low)} – ${fmt(item.high)}`}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
 
-            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-              <p className="text-sm font-light text-foreground">Total estimated range</p>
+            <div className="mt-2 pt-4 border-t border-border flex items-center justify-between">
+              <p className="text-sm font-light text-foreground">Total closing costs</p>
               <p className="text-sm font-light text-foreground">
                 {fmt(totalLow)} – {fmt(totalHigh)}
               </p>

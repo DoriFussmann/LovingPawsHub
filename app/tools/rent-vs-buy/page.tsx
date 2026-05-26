@@ -16,8 +16,10 @@ interface RvBResult {
   yearlyData: { year: number; buyCumulative: number; rentCumulative: number }[];
   closingCosts: number;
   homeValueAtEnd: number;
+  equityAtSale: number;
   loanAmountStart: number;
   conclusion: string;
+  advantage: number;
 }
 
 function calcMonthlyPI(principal: number, annualRate: number, termMonths: number): number {
@@ -127,6 +129,10 @@ function computeRvB(
 
   const homeValueAtEnd = homePrice * Math.pow(1 + annualAppreciation / 100, yearsInHome);
 
+  // Equity at sale: what you'd walk away with after selling costs and paying off remaining loan
+  const equityAtSale = Math.max(0, homeValueAtEnd * 0.94 - balance);
+  const advantage = Math.abs(lastYear.buyCumulative - lastYear.rentCumulative);
+
   return {
     breakEvenYear,
     buyTotalCost: lastYear.buyCumulative,
@@ -135,8 +141,10 @@ function computeRvB(
     yearlyData,
     closingCosts,
     homeValueAtEnd,
+    equityAtSale,
     loanAmountStart: loanAmount,
     conclusion,
+    advantage,
   };
 }
 
@@ -330,7 +338,7 @@ export default function RentVsBuyPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
               <div>
                 <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-1">net buy cost</p>
                 <p className="text-lg font-extralight">{fmt(result.buyTotalCost)}</p>
@@ -340,22 +348,48 @@ export default function RentVsBuyPage() {
                 <p className="text-lg font-extralight">{fmt(result.rentTotalCost)}</p>
               </div>
               <div>
+                <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-1">advantage</p>
+                <p className="text-lg font-extralight">{fmt(result.advantage)}</p>
+                <p className="text-[10px] text-muted-foreground">{result.winnerIsBuy ? "buy" : "rent"} wins by</p>
+              </div>
+              <div>
                 <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-1">break-even year</p>
                 <p className="text-lg font-extralight">
                   {result.breakEvenYear ? `Year ${result.breakEvenYear}` : "Beyond window"}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-1">home value then</p>
-                <p className="text-lg font-extralight">{fmt(result.homeValueAtEnd)}</p>
+                <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-1">equity at sale</p>
+                <p className="text-lg font-extralight">{fmt(result.equityAtSale)}</p>
+                <p className="text-[10px] text-muted-foreground">after ~6% selling costs</p>
               </div>
             </div>
 
             <ComparisonChart data={result.yearlyData} years={parseInt(years)} />
 
-            <p className="text-[11px] text-muted-foreground mt-4 leading-relaxed">
-              Net costs account for equity built, investment returns on the down payment alternative, and selling costs (~6%). This is a simplified model &mdash; it doesn&apos;t include your specific tax situation, rent control, or local market conditions.
-            </p>
+            {/* Model assumptions */}
+            <details className="mt-5 group">
+              <summary className="text-[10px] tracking-widests uppercase text-foreground/40 cursor-pointer hover:text-foreground/60 transition-colors select-none list-none flex items-center gap-1.5">
+                <span className="group-open:rotate-90 inline-block transition-transform">▶</span>
+                Model assumptions
+              </summary>
+              <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Rent growth", value: "3% / yr" },
+                  { label: "Maintenance", value: "1% of home value / yr" },
+                  { label: "Buying closing costs", value: "3% of price" },
+                  { label: "Selling costs", value: "6% of sale price" },
+                ].map((a) => (
+                  <div key={a.label} className="border border-border/40 rounded-md px-3 py-2">
+                    <p className="text-[10px] text-muted-foreground">{a.label}</p>
+                    <p className="text-xs font-light text-foreground">{a.value}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                This model doesn&apos;t include your specific tax situation, rent control, or local market dynamics. Use it as a directional guide, not a precise forecast.
+              </p>
+            </details>
           </ResultsPanel>
         )}
       </AnimatePresence>

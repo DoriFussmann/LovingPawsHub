@@ -339,64 +339,111 @@ export default function MortgageBreakdownPage() {
               ))}
             </div>
 
-            {activeTab === "breakdown" && (
-              <div className="flex flex-col sm:flex-row gap-8 items-start">
-                <DonutChart
-                  segments={[
-                    { value: result.principal, label: "Principal", color: COLORS[0] },
-                    { value: result.interest, label: "Interest", color: COLORS[1] },
-                    ...(result.pmi > 0
-                      ? [{ value: result.pmi, label: "PMI", color: COLORS[2] }]
-                      : []),
-                    { value: result.taxes, label: "Taxes", color: COLORS[result.pmi > 0 ? 3 : 2] },
-                    { value: result.insurance, label: "Insurance", color: "#e5e5e5" },
-                  ]}
-                />
-                <div className="flex-1 space-y-3">
-                  {[
-                    { label: "Principal", value: result.principal, note: "Equity you're building" },
-                    { label: "Interest", value: result.interest, note: "Cost of borrowing" },
-                    ...(result.pmi > 0
-                      ? [{ label: "PMI", value: result.pmi, note: "Required until you reach 20% equity" }]
-                      : []),
-                    { label: "Est. property taxes", value: result.taxes, note: "~1.1% annually, varies by county" },
-                    { label: "Est. homeowners insurance", value: result.insurance, note: "~0.5% annually, varies by insurer" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-2.5 h-2.5 rounded-sm shrink-0 mt-0.5"
-                          style={{ background: COLORS[Math.min(i, COLORS.length - 1)] }}
-                        />
-                        <div>
-                          <p className="text-sm font-light text-foreground">{item.label}</p>
-                          <p className="text-[11px] text-muted-foreground">{item.note}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm font-light text-foreground shrink-0">{fmtDec(item.value)}</p>
+            {activeTab === "breakdown" && (() => {
+              const totalInterest = (() => {
+                const pts = buildAmortization(result.loanAmount, result.annualRate, result.termMonths);
+                return pts[pts.length - 1].cumulativeInterest;
+              })();
+              const interestPct = result.loanAmount > 0 ? (totalInterest / result.loanAmount) * 100 : 0;
+              const equity5yr = (() => {
+                const pts = buildAmortization(result.loanAmount, result.annualRate, result.termMonths);
+                const pt5 = pts.find((p) => p.month === 60) ?? pts[pts.length - 1];
+                return pt5.cumulativePrincipal;
+              })();
+
+              // Correct PMI drop-off: solve for month when balance = 80% of original home price
+              const pmiDropMonth = (() => {
+                if (result.pmi === 0) return null;
+                const target = result.loanAmount * (0.8 / (1 - result.downPct / 100));
+                const r = result.annualRate / 100 / 12;
+                const pmt = result.total - result.pmi - result.taxes - result.insurance;
+                if (r === 0) return Math.ceil((result.loanAmount - target) / pmt);
+                const num = Math.log(pmt / (pmt - r * target));
+                const den = Math.log(1 + r);
+                const month = Math.ceil(num / den);
+                return isFinite(month) && month > 0 ? month : null;
+              })();
+
+              const firstYearInterestPct = result.annualRate > 0
+                ? Math.round((result.interest / (result.interest + result.principal)) * 100)
+                : 0;
+
+              return (
+                <div>
+                  {/* Insight bar */}
+                  <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-muted/20 rounded-md border border-border/40">
+                    <div>
+                      <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">total interest paid</p>
+                      <p className="text-base font-light">{fmt(totalInterest)}</p>
+                      <p className="text-[11px] text-muted-foreground">{interestPct.toFixed(0)}% of loan amount</p>
                     </div>
-                  ))}
-                  {result.pmi > 0 && (
-                    <p className="text-[11px] text-muted-foreground border border-border/60 rounded-md px-3 py-2 mt-2">
-                      PMI drops off once your balance reaches 80% of the original purchase price — roughly at month{" "}
-                      {Math.round(
-                        (result.termMonths *
-                          Math.log(0.8) /
-                          Math.log(1 - (result.annualRate / 100 / 12) * (result.loanAmount / (result.total - result.pmi - result.taxes - result.insurance))) || result.termMonths * 0.3)
-                      )}.
-                    </p>
-                  )}
+                    <div>
+                      <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">equity after 5 yrs</p>
+                      <p className="text-base font-light">{fmt(equity5yr)}</p>
+                      <p className="text-[11px] text-muted-foreground">principal paid down</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">year-1 interest share</p>
+                      <p className="text-base font-light">{firstYearInterestPct}%</p>
+                      <p className="text-[11px] text-muted-foreground">of each early payment</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-8 items-start">
+                    <DonutChart
+                      segments={[
+                        { value: result.principal, label: "Principal", color: COLORS[0] },
+                        { value: result.interest, label: "Interest", color: COLORS[1] },
+                        ...(result.pmi > 0
+                          ? [{ value: result.pmi, label: "PMI", color: COLORS[2] }]
+                          : []),
+                        { value: result.taxes, label: "Taxes", color: COLORS[result.pmi > 0 ? 3 : 2] },
+                        { value: result.insurance, label: "Insurance", color: "#e5e5e5" },
+                      ]}
+                    />
+                    <div className="flex-1 space-y-3">
+                      {[
+                        { label: "Principal", value: result.principal, note: "Equity you're building" },
+                        { label: "Interest", value: result.interest, note: "Cost of borrowing" },
+                        ...(result.pmi > 0
+                          ? [{ label: "PMI", value: result.pmi, note: "Required until you reach 20% equity" }]
+                          : []),
+                        { label: "Est. property taxes", value: result.taxes, note: "~1.1% annually, varies by county" },
+                        { label: "Est. homeowners insurance", value: result.insurance, note: "~0.5% annually, varies by insurer" },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-2.5 h-2.5 rounded-sm shrink-0 mt-0.5"
+                              style={{ background: COLORS[Math.min(i, COLORS.length - 1)] }}
+                            />
+                            <div>
+                              <p className="text-sm font-light text-foreground">{item.label}</p>
+                              <p className="text-[11px] text-muted-foreground">{item.note}</p>
+                            </div>
+                          </div>
+                          <p className="text-sm font-light text-foreground shrink-0">{fmtDec(item.value)}</p>
+                        </div>
+                      ))}
+                      {result.pmi > 0 && pmiDropMonth && (
+                        <p className="text-[11px] text-muted-foreground border border-border/60 rounded-md px-3 py-2 mt-2">
+                          PMI drops off once your balance reaches 80% of the original purchase price — roughly month {pmiDropMonth} (year {Math.ceil(pmiDropMonth / 12)}).
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {activeTab === "amortization" && (() => {
               const points = buildAmortization(result.loanAmount, result.annualRate, result.termMonths);
               const lastPoint = points[points.length - 1];
+              const pt5 = points.find((p) => p.month === 60) ?? null;
               return (
                 <div className="space-y-4">
                   <AmortChart points={points} loanAmount={result.loanAmount} />
-                  <div className="grid grid-cols-3 gap-4 pt-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
                     <div>
                       <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">loan amount</p>
                       <p className="text-base font-light">{fmt(result.loanAmount)}</p>
@@ -409,6 +456,13 @@ export default function MortgageBreakdownPage() {
                       <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">total paid</p>
                       <p className="text-base font-light">{fmt(result.loanAmount + lastPoint.cumulativeInterest)}</p>
                     </div>
+                    {pt5 && (
+                      <div>
+                        <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">equity yr 5</p>
+                        <p className="text-base font-light">{fmt(pt5.cumulativePrincipal)}</p>
+                        <p className="text-[10px] text-muted-foreground">{((pt5.cumulativePrincipal / result.loanAmount) * 100).toFixed(1)}% paid off</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

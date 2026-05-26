@@ -102,7 +102,7 @@ export default function HeroSection({
             <div className="flex items-center gap-3 flex-wrap">
               <Link
                 href="/articles"
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-md border border-foreground/30 text-sm font-light text-foreground hover:border-foreground/70 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground text-sm font-light hover:bg-sage-800 transition-colors"
               >
                 {ctaPrimary}
                 <svg
@@ -121,7 +121,7 @@ export default function HeroSection({
 
               <Link
                 href="/articles"
-                className="inline-flex items-center px-4 py-1.5 rounded-md border border-border text-sm font-light text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                className="inline-flex items-center px-5 py-2.5 rounded-full border border-accent/30 text-sm font-light text-accent hover:bg-sage-50 hover:border-accent/60 transition-colors"
               >
                 {ctaSecondary}
               </Link>
@@ -135,7 +135,7 @@ export default function HeroSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.0, ease, delay: 0.3 }}
           >
-            <div className="border border-border rounded-xl shadow-sm bg-card overflow-hidden">
+            <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sh2">
 
               {/* Mini navbar */}
               <div className="border-b border-border/40 px-4 py-2.5 flex items-center justify-between">

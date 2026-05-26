@@ -3,24 +3,92 @@
 @tailwind utilities;
 
 :root {
-  --foreground: #0f0f0f;
-  --background: #ffffff;
-  --muted: #f5f5f4;
-  --muted-foreground: #737373;
-  --border: #e5e5e5;
-  --border-strong: #d4d4d4;
-  --accent: #0f0f0f;
-  --accent-foreground: #ffffff;
+  /* ── Sage (forest green primary) ── */
+  --sage-50: #f1f4ef;
+  --sage-100: #e2eadc;
+  --sage-200: #c8d6bf;
+  --sage-300: #a7bd9a;
+  --sage-400: #7e9b71;
+  --sage-500: #587a4d;
+  --sage-600: #3f5f37;
+  --sage-700: #2e4929;
+  --sage-800: #22361f;
+  --sage-900: #172517;
+
+  /* ── Cream (warm background) ── */
+  --cream-50: #fbfaf6;
+  --cream-100: #f6f4ee;
+  --cream-200: #ede9df;
+  --cream-300: #ddd7c6;
+
+  /* ── Ink (neutral dark with green undertone) ── */
+  --ink-900: #1a1f1c;
+  --ink-700: #3a423d;
+  --ink-500: #6b736d;
+  --ink-400: #8f968f;
+  --ink-300: #b6bbb6;
+  --ink-200: #d4d7d2;
+  --ink-100: #e8ebe6;
+
+  /* ── Slate (soft slate-blue secondary) ── */
+  --slate-100: #e6edf1;
+  --slate-300: #aac0cd;
+  --slate-500: #5e7e8d;
+  --slate-700: #3b5562;
+
+  /* ── Clay (warm amber accent) ── */
+  --clay-300: #e7c9a7;
+  --clay-500: #c89868;
+  --clay-700: #8e6738;
+
+  /* ── Semantic status ── */
+  --ok-bg: #e4eed6;
+  --ok-ink: #2e4929;
+  --warn-bg: #f6e6c8;
+  --warn-ink: #735026;
+  --err-bg: #f1d9d3;
+  --err-ink: #7a3327;
+  --info-bg: #dfe9ee;
+  --info-ink: #2c4854;
+
+  /* ── Semantic surface tokens ── */
+  --background: #f6f4ee;
+  --foreground: #1a1f1c;
+  --card: #fbfaf6;
+  --muted: #fbfaf6;
+  --muted-foreground: #6b736d;
+  --border: #dde4d8;
+  --border-strong: #c5d0be;
+  --accent: #2e4929;
+  --accent-foreground: #fbfaf6;
+  --primary: #2e4929;
+  --primary-ink: #fbfaf6;
+
+  /* ── Shadows ── */
+  --sh-1: 0 1px 0 rgba(34, 54, 31, 0.04), 0 1px 2px rgba(34, 54, 31, 0.04);
+  --sh-2: 0 1px 0 rgba(34, 54, 31, 0.04), 0 4px 12px rgba(34, 54, 31, 0.06);
+  --sh-3: 0 2px 0 rgba(34, 54, 31, 0.04), 0 12px 32px rgba(34, 54, 31, 0.08);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .shadow-sh1 {
+    box-shadow: var(--sh-1);
+  }
+  .shadow-sh2 {
+    box-shadow: var(--sh-2);
+  }
+  .shadow-sh3 {
+    box-shadow: var(--sh-3);
   }
 }
 

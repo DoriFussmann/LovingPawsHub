@@ -37,9 +37,61 @@ function buildMonthOptions() {
 
 const MONTH_OPTIONS = buildMonthOptions();
 
+interface GoalSnapshot {
+  targetDate: string;
+  creditRange: string;
+  savings: string;
+  preApproval: string;
+  hasRealtor: string;
+  monthsAway: number;
+}
+
+function GoalCard({ goal }: { goal: GoalSnapshot }) {
+  const fmt = (n: number) =>
+    n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const savingsNum = parseFloat(goal.savings.replace(/,/g, "")) || 0;
+
+  const preApprovalLabel =
+    goal.preApproval === "done" ? "Pre-approved" :
+    goal.preApproval === "yes" ? "Pre-approval in progress" :
+    "Pre-approval not started";
+
+  const realtorLabel =
+    goal.hasRealtor === "yes" ? "Have a realtor" :
+    goal.hasRealtor === "looking" ? "Looking for a realtor" :
+    "No realtor yet";
+
+  return (
+    <div className="border border-border/60 rounded-md p-4 mb-6 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
+      <div>
+        <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">target move-in</p>
+        <p className="text-sm font-light text-foreground">{goal.targetDate}</p>
+        <p className="text-[11px] text-muted-foreground">{goal.monthsAway} months from now</p>
+      </div>
+      <div>
+        <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">credit range</p>
+        <p className="text-sm font-light text-foreground">{goal.creditRange}</p>
+      </div>
+      <div>
+        <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">current savings</p>
+        <p className="text-sm font-light text-foreground">{savingsNum > 0 ? fmt(savingsNum) : "—"}</p>
+      </div>
+      <div>
+        <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">pre-approval</p>
+        <p className="text-sm font-light text-foreground">{preApprovalLabel}</p>
+      </div>
+      <div>
+        <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-0.5">realtor</p>
+        <p className="text-sm font-light text-foreground">{realtorLabel}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function TimelineBuilderPage() {
   const [phase, setPhase] = useState<Phase>("input");
   const [stream, setStream] = useState<ReadableStream<Uint8Array> | null>(null);
+  const [goal, setGoal] = useState<GoalSnapshot | null>(null);
 
   const [targetDate, setTargetDate] = useState(MONTH_OPTIONS[5]?.value ?? "");
   const [creditRange, setCreditRange] = useState("720–759");
@@ -53,6 +105,13 @@ export default function TimelineBuilderPage() {
       setPhase("loading");
       setStream(null);
 
+      // Compute months away from today
+      const now = new Date();
+      const targetIdx = MONTH_OPTIONS.findIndex((o) => o.value === targetDate);
+      const monthsAway = targetIdx >= 0 ? targetIdx + 2 : 6;
+
+      setGoal({ targetDate, creditRange, savings, preApproval, hasRealtor, monthsAway });
+
       try {
         const res = await fetch("/api/tools/timeline-builder", {
           method: "POST",
@@ -61,8 +120,8 @@ export default function TimelineBuilderPage() {
             targetDate,
             creditRange,
             savings: savings.replace(/,/g, ""),
-            preApprovalStarted: preApproval === "yes" ? "Yes" : "No",
-            hasRealtor: hasRealtor === "yes" ? "Yes" : "No",
+            preApprovalStarted: preApproval === "done" ? "Yes, already approved" : preApproval === "yes" ? "Yes, in progress" : "No",
+            hasRealtor: hasRealtor === "yes" ? "Yes" : hasRealtor === "looking" ? "Looking / interviewing" : "No",
           }),
         });
 
@@ -80,6 +139,7 @@ export default function TimelineBuilderPage() {
   const handleReset = useCallback(() => {
     setPhase("input");
     setStream(null);
+    setGoal(null);
   }, []);
 
   return (
@@ -165,8 +225,9 @@ export default function TimelineBuilderPage() {
 
         {phase === "loading" && <AILoader />}
 
-        {(phase === "streaming" || phase === "done") && (
+        {(phase === "streaming" || phase === "done") && goal && (
           <ResultsPanel onReset={handleReset} resetLabel="Change my timeline">
+            <GoalCard goal={goal} />
             <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-4">your month-by-month plan</p>
             <StreamingText
               stream={stream}

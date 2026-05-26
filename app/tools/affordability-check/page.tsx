@@ -23,9 +23,53 @@ const CREDIT_RANGES = [
   "Below 580",
 ];
 
+interface AffordabilityStats {
+  backEndDTI: number;
+  maxPriceByDTI: number;
+  downPaymentNeeded: number;
+  closingCostsNeeded: number;
+  savingsLeft: number;
+  monthlyGross: number;
+}
+
+function computeStats(grossIncome: number, monthlyDebt: number, savings: number): AffordabilityStats {
+  const monthlyGross = grossIncome / 12;
+  // Back-end DTI: existing debt as % of gross monthly income (without housing)
+  const backEndDTI = monthlyGross > 0 ? (monthlyDebt / monthlyGross) * 100 : 0;
+
+  // Max back-end DTI lenders allow is ~43%. Max housing payment = 43% of gross - existing debt
+  const maxHousingPayment = monthlyGross * 0.43 - monthlyDebt;
+
+  // Estimate max price: housing payment covers P&I (at ~7%), taxes (~1.1%/12), insurance (~0.5%/12)
+  // Monthly non-P&I = price * (0.011 + 0.005) / 12 = price * 0.00133
+  // P&I payment for $1 loan at 7% / 30yr ≈ 0.006653
+  // maxHousingPayment = price * 0.9 * 0.006653 + price * 0.00133
+  // maxHousingPayment = price * (0.9 * 0.006653 + 0.00133)
+  const perDollar = 0.9 * 0.006653 + 0.00133;
+  const maxPriceByDTI = perDollar > 0 ? Math.max(0, maxHousingPayment / perDollar) : 0;
+
+  // Savings split: 10% down + 3% closing costs on that max price
+  const downPaymentNeeded = maxPriceByDTI * 0.1;
+  const closingCostsNeeded = maxPriceByDTI * 0.03;
+  const savingsLeft = savings - downPaymentNeeded - closingCostsNeeded;
+
+  return { backEndDTI, maxPriceByDTI, downPaymentNeeded, closingCostsNeeded, savingsLeft, monthlyGross };
+}
+
+function StatCard({ label, value, note, highlight }: { label: string; value: string; note?: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-md border p-4 ${highlight ? "border-foreground/20 bg-foreground/[0.03]" : "border-border"}`}>
+      <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-1">{label}</p>
+      <p className="text-lg font-extralight text-foreground">{value}</p>
+      {note && <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{note}</p>}
+    </div>
+  );
+}
+
 export default function AffordabilityCheckPage() {
   const [phase, setPhase] = useState<Phase>("input");
   const [stream, setStream] = useState<ReadableStream<Uint8Array> | null>(null);
+  const [stats, setStats] = useState<AffordabilityStats | null>(null);
 
   const [grossIncome, setGrossIncome] = useState("");
   const [monthlyDebt, setMonthlyDebt] = useState("");
@@ -33,11 +77,19 @@ export default function AffordabilityCheckPage() {
   const [location, setLocation] = useState("");
   const [creditRange, setCreditRange] = useState("720–759");
 
+  const fmt = (n: number) =>
+    n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       setPhase("loading");
       setStream(null);
+
+      const incomeNum = parseFloat(grossIncome.replace(/,/g, "")) || 0;
+      const debtNum = parseFloat(monthlyDebt.replace(/,/g, "")) || 0;
+      const savingsNum = parseFloat(savings.replace(/,/g, "")) || 0;
+      setStats(computeStats(incomeNum, debtNum, savingsNum));
 
       try {
         const res = await fetch("/api/tools/affordability-check", {
@@ -66,6 +118,7 @@ export default function AffordabilityCheckPage() {
   const handleReset = useCallback(() => {
     setPhase("input");
     setStream(null);
+    setStats(null);
   }, []);
 
   return (
@@ -153,13 +206,45 @@ export default function AffordabilityCheckPage() {
 
         {phase === "loading" && <AILoader />}
 
-        {(phase === "streaming" || phase === "done") && (
+        {(phase === "streaming" || phase === "done") && stats && (
           <ResultsPanel onReset={handleReset} resetLabel="Change inputs">
-            <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-4">your affordability assessment</p>
-            <StreamingText
-              stream={stream}
-              onComplete={() => setPhase("done")}
-            />
+            {/* Pre-computed snapshot cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7">
+              <StatCard
+                label="Max price (DTI rule)"
+                value={fmt(stats.maxPriceByDTI)}
+                note="Based on 43% back-end DTI at ~7% rate, 10% down"
+                highlight
+              />
+              <StatCard
+                label="Back-end DTI (debt only)"
+                value={`${stats.backEndDTI.toFixed(1)}%`}
+                note={
+                  stats.backEndDTI < 20
+                    ? "Healthy — gives you room for housing"
+                    : stats.backEndDTI < 36
+                    ? "Moderate — watch total DTI with housing added"
+                    : "High — lenders will scrutinize this"
+                }
+              />
+              <StatCard
+                label="Savings after 10% down + closing"
+                value={stats.savingsLeft >= 0 ? fmt(stats.savingsLeft) : `–${fmt(Math.abs(stats.savingsLeft))}`}
+                note={
+                  stats.savingsLeft >= 0
+                    ? "Remaining reserve at max price estimate"
+                    : "Shortfall at max price — lower price range needed"
+                }
+              />
+            </div>
+
+            <div className="border-t border-border/40 pt-5">
+              <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-4">full assessment</p>
+              <StreamingText
+                stream={stream}
+                onComplete={() => setPhase("done")}
+              />
+            </div>
           </ResultsPanel>
         )}
       </AnimatePresence>

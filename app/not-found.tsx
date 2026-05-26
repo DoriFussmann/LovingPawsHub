@@ -23,7 +23,7 @@ export default function NotFound() {
         </Link>
         <Link
           href="/articles"
-          className="text-xs font-light border border-foreground rounded-md px-4 py-2 bg-foreground text-background hover:opacity-80 transition-opacity"
+          className="text-xs font-light border border-accent rounded-md px-4 py-2 bg-accent text-accent-foreground hover:bg-sage-800 hover:border-sage-800 transition-colors"
         >
           browse articles
         </Link>

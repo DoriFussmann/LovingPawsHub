@@ -14,14 +14,17 @@ const inputClass =
 const labelClass = "block text-xs font-light text-muted-foreground mb-1";
 
 const SCORE_TIERS = [
-  { range: "800–850", label: "Exceptional", desc: "Top-tier rates, every loan type" },
-  { range: "740–799", label: "Very good", desc: "Near-best rates, strong approval odds" },
-  { range: "670–739", label: "Good", desc: "Standard rates, most loans available" },
-  { range: "580–669", label: "Fair", desc: "Higher rates, FHA may be best option" },
-  { range: "300–579", label: "Poor", desc: "Very limited options, credit building first" },
+  { min: 800, max: 850, label: "Exceptional", desc: "Top-tier rates, every loan type" },
+  { min: 740, max: 799, label: "Very good", desc: "Near-best rates, strong approval odds" },
+  { min: 670, max: 739, label: "Good", desc: "Standard rates, most loans available" },
+  { min: 580, max: 669, label: "Fair", desc: "Higher rates, FHA may be best option" },
+  { min: 300, max: 579, label: "Poor", desc: "Very limited options, credit building first" },
 ];
 
-function ScoreTierBadge({ score }: { score: number }) {
+const SCORE_MIN = 300;
+const SCORE_MAX = 850;
+
+function ScoreBar({ score }: { score: number }) {
   const tier =
     score >= 800 ? SCORE_TIERS[0]
     : score >= 740 ? SCORE_TIERS[1]
@@ -29,12 +32,59 @@ function ScoreTierBadge({ score }: { score: number }) {
     : score >= 580 ? SCORE_TIERS[3]
     : SCORE_TIERS[4];
 
+  const fillPct = ((score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100;
+
+  // Zone boundaries as percentages
+  const zones = [
+    { label: "Poor", end: ((579 - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100 },
+    { label: "Fair", end: ((669 - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100 },
+    { label: "Good", end: ((739 - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100 },
+    { label: "Very good", end: ((799 - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100 },
+    { label: "Exceptional", end: 100 },
+  ];
+
   return (
-    <div className="flex items-center gap-3 mb-6">
-      <div className="text-3xl font-extralight tracking-tight">{score}</div>
-      <div>
-        <p className="text-sm font-light text-foreground">{tier.label}</p>
-        <p className="text-xs text-muted-foreground">{tier.desc}</p>
+    <div className="mb-7">
+      <div className="flex items-end gap-4 mb-3">
+        <p className="text-4xl font-extralight tracking-tight">{score}</p>
+        <div className="pb-1">
+          <p className="text-sm font-light text-foreground">{tier.label}</p>
+          <p className="text-xs text-muted-foreground">{tier.desc}</p>
+        </div>
+      </div>
+
+      {/* Score bar */}
+      <div className="relative h-2 w-full rounded-full bg-border overflow-hidden mb-1.5">
+        {/* Segmented zone backgrounds */}
+        {zones.map((zone, i) => {
+          const prevEnd = i === 0 ? 0 : zones[i - 1].end;
+          return (
+            <div
+              key={zone.label}
+              className="absolute top-0 h-full"
+              style={{
+                left: `${prevEnd}%`,
+                width: `${zone.end - prevEnd}%`,
+                opacity: 0.18,
+                background: i < 2 ? "var(--color-foreground)" : i === 2 ? "var(--color-foreground)" : "var(--color-foreground)",
+              }}
+            />
+          );
+        })}
+        {/* Filled portion */}
+        <div
+          className="absolute top-0 left-0 h-full bg-foreground rounded-full transition-all"
+          style={{ width: `${fillPct}%` }}
+        />
+      </div>
+
+      <div className="flex justify-between text-[9px] tracking-widest uppercase text-foreground/30 select-none">
+        <span>300</span>
+        <span>580</span>
+        <span>670</span>
+        <span>740</span>
+        <span>800</span>
+        <span>850</span>
       </div>
     </div>
   );
@@ -109,8 +159,8 @@ export default function CreditScoreTranslatorPage() {
             <div className="border border-border/50 rounded-md p-4 space-y-2">
               <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-3">score tiers</p>
               {SCORE_TIERS.map((t) => (
-                <div key={t.range} className="flex items-center justify-between">
-                  <span className="text-xs font-light text-muted-foreground">{t.range}</span>
+                <div key={t.label} className="flex items-center justify-between">
+                  <span className="text-xs font-light text-muted-foreground">{t.min}–{t.max}</span>
                   <span className="text-xs font-light text-foreground">{t.label}</span>
                 </div>
               ))}
@@ -129,7 +179,7 @@ export default function CreditScoreTranslatorPage() {
 
         {(phase === "streaming" || phase === "done") && (
           <ResultsPanel onReset={handleReset} resetLabel="Try a different score">
-            <ScoreTierBadge score={submittedScore} />
+            <ScoreBar score={submittedScore} />
             <StreamingText
               stream={stream}
               onComplete={() => setPhase("done")}

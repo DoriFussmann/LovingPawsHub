@@ -7,6 +7,20 @@ import { AILoader } from "@/components/public/tools/ToolLoader";
 import ResultsPanel from "@/components/public/tools/ResultsPanel";
 import StreamingText from "@/components/public/tools/StreamingText";
 
+// Short labels for the answer summary display
+const QUESTION_SHORT_LABELS: Record<string, string> = {
+  savings_cushion: "Emergency reserve after closing",
+  job_stability: "Employment stability",
+  credit_health: "Credit score range",
+  debt_load: "Monthly debt load",
+  timeline: "Move-in timeline flexibility",
+  emotional_readiness: "Emotional readiness",
+  local_market: "Local market knowledge",
+  down_payment: "Down payment %",
+  housing_costs: "Housing cost vs. take-home",
+  knowledge: "Process knowledge",
+};
+
 // ─── Quiz questions ───────────────────────────────────────────────────────────
 
 interface Question {
@@ -127,6 +141,7 @@ export default function ReadyAssessmentPage() {
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [stream, setStream] = useState<ReadableStream<Uint8Array> | null>(null);
+  const [showAnswers, setShowAnswers] = useState(false);
 
   const question = QUESTIONS[currentQ];
   const progress = (currentQ / QUESTIONS.length) * 100;
@@ -167,6 +182,7 @@ export default function ReadyAssessmentPage() {
     setCurrentQ(0);
     setAnswers({});
     setStream(null);
+    setShowAnswers(false);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -244,6 +260,39 @@ export default function ReadyAssessmentPage() {
               stream={stream}
               onComplete={() => setPhase("done")}
             />
+
+            {phase === "done" && (
+              <div className="mt-8 border-t border-border/40 pt-5">
+                <button
+                  onClick={() => setShowAnswers((v) => !v)}
+                  className="flex items-center gap-2 text-xs font-light text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span>{showAnswers ? "▲" : "▼"}</span>
+                  <span>{showAnswers ? "Hide" : "Review"} your answers</span>
+                </button>
+
+                {showAnswers && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-4 space-y-0 divide-y divide-border/40"
+                  >
+                    {QUESTIONS.map((q) => {
+                      const answer = answers[q.question];
+                      if (!answer) return null;
+                      const shortLabel = QUESTION_SHORT_LABELS[q.id] ?? q.id;
+                      return (
+                        <div key={q.id} className="py-3 flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-6">
+                          <p className="text-[11px] font-light text-muted-foreground shrink-0 sm:w-48">{shortLabel}</p>
+                          <p className="text-[11px] font-light text-foreground">{answer}</p>
+                        </div>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </div>
+            )}
           </ResultsPanel>
         )}
       </AnimatePresence>

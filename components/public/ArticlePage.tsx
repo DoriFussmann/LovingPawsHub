@@ -270,7 +270,7 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                     <h2
                       id={anchor}
                       className={`text-xl font-light mt-10 mb-3 scroll-mt-20 transition-colors duration-300 ${
-                        isActive ? "text-blue-600/80" : "text-foreground"
+                        isActive ? "text-sage-600" : "text-foreground"
                       }`}
                     >
                       {children}
@@ -284,7 +284,7 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                     <h3
                       id={anchor}
                       className={`text-base font-light mt-7 mb-2 scroll-mt-20 transition-colors duration-300 ${
-                        isActive ? "text-blue-500/70" : "text-foreground"
+                        isActive ? "text-sage-500" : "text-foreground"
                       }`}
                     >
                       {children}
@@ -308,7 +308,7 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                       {...(!isInternal
                         ? { target: "_blank", rel: "noopener noreferrer" }
                         : {})}
-                      className="text-foreground underline underline-offset-2 hover:text-foreground/70 transition-colors"
+                      className="text-sage-700 underline underline-offset-2 decoration-sage-700/30 hover:text-sage-800 hover:decoration-sage-700 transition-colors"
                     >
                       {children}
                     </a>
