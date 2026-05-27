@@ -137,9 +137,28 @@ interface ClusterArticle {
   external_links: Array<{ url: string; anchor: string }> | null;
 }
 
+const ARTICLE_SELECT = "id, article_id, h1_title, slug, primary_keyword, body_markdown, core_id, bridge_id, content_type, is_core_article, link_status, internal_links_injected, external_links";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function fetchClusterArticles(clusterId: string) {
   const supabase = createServiceClient();
 
+  // Synthetic key: articles published without a skeleton/cluster assignment.
+  // The Links Hub groups these as "${core_id}__${bridge_id}" instead of a real UUID.
+  if (!UUID_RE.test(clusterId) && clusterId.includes("__")) {
+    const separatorIdx = clusterId.indexOf("__");
+    const core_id = clusterId.slice(0, separatorIdx);
+    const bridge_id = clusterId.slice(separatorIdx + 2);
+    const { data: rawArticles } = await supabase
+      .from("articles")
+      .select(ARTICLE_SELECT)
+      .eq("core_id", core_id)
+      .eq("bridge_id", bridge_id)
+      .eq("status", "published");
+    return { supabase, skeletonIds: [], articles: (rawArticles ?? []) as ClusterArticle[] };
+  }
+
+  // Normal path: real cluster UUID — join via article_skeletons.
   const { data: skeletons } = await supabase
     .from("article_skeletons")
     .select("id")
@@ -150,7 +169,7 @@ async function fetchClusterArticles(clusterId: string) {
 
   const { data: rawArticles } = await supabase
     .from("articles")
-    .select("id, article_id, h1_title, slug, primary_keyword, body_markdown, core_id, bridge_id, content_type, is_core_article, link_status, internal_links_injected, external_links")
+    .select(ARTICLE_SELECT)
     .in("skeleton_id", skeletonIds)
     .eq("status", "published");
 

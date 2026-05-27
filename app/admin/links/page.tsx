@@ -37,8 +37,22 @@ export interface ExternalLinkData {
   anchor: string;
 }
 
+export interface BridgeKeywordOption {
+  id: string;
+  bridge_id: string;
+  keyword: string;
+}
+
+export interface CoreKeywordOption {
+  id: string;
+  core_id: string;
+  keyword: string;
+  bridges: BridgeKeywordOption[];
+}
+
 export default async function LinksPage() {
   let clusters: ClusterLinkData[] = [];
+  let keywordOptions: CoreKeywordOption[] = [];
 
   try {
     const supabase = createServiceClient();
@@ -146,6 +160,25 @@ export default async function LinksPage() {
 
       clusters = Array.from(clusterMap.values());
     }
+
+    // Fetch all core + bridge keywords for the reassign dropdowns
+    const { data: coreRows } = await supabase
+      .from("core_keywords")
+      .select("id, core_id, keyword, bridge_keywords(id, bridge_id, keyword)")
+      .order("keyword");
+
+    if (coreRows) {
+      keywordOptions = coreRows.map((c) => ({
+        id: c.id,
+        core_id: c.core_id,
+        keyword: c.keyword,
+        bridges: ((c.bridge_keywords ?? []) as Array<{ id: string; bridge_id: string; keyword: string }>).map((b) => ({
+          id: b.id,
+          bridge_id: b.bridge_id,
+          keyword: b.keyword,
+        })),
+      }));
+    }
   } catch (e) {
     console.error("[links page] DB error:", e);
   }
@@ -169,7 +202,7 @@ export default async function LinksPage() {
           {totalArticles} articles · {totalInternal} internal links · {totalExternal} external links
         </p>
       </div>
-      <LinksClient clusters={clusters} />
+      <LinksClient clusters={clusters} keywordOptions={keywordOptions} />
     </div>
   );
 }
