@@ -1,4 +1,5 @@
 import { createServiceClient as createClient } from "@/lib/supabase/server";
+import { getSiteConfig, cfg } from "@/lib/site-config";
 import ResourcesClient from "./ResourcesClient";
 
 export default async function ResourcesPage() {
@@ -29,6 +30,9 @@ export default async function ResourcesPage() {
     // DB not configured
   }
 
+  const config = await getSiteConfig();
+  const industryName = cfg(config, "industry_name");
+
   return (
     <div>
       <div className="mb-8">
@@ -43,7 +47,7 @@ export default async function ResourcesPage() {
       <ResourcesClient
         resources={resources}
         industryId={industryId}
-        industryName={process.env.NEXT_PUBLIC_INDUSTRY_NAME ?? ""}
+        industryName={industryName}
       />
     </div>
   );

@@ -135,33 +135,33 @@ export default async function AboutPage() {
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
 
-      <div className="max-w-[1280px] mx-auto px-6 md:px-8 pt-24 pb-16">
+      <div className="max-w-[1280px] mx-auto px-6 md:px-14 pt-16 pb-16">
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-light text-muted-foreground mb-12 flex-wrap">
-          <Link href="/" className="hover:text-foreground transition-colors">home</Link>
-          <span>/</span>
-          <span className="text-foreground">about</span>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-12 flex-wrap">
+          <Link href="/" className="hover:text-accent transition-colors">Home</Link>
+          <span className="text-border-strong">/</span>
+          <span className="text-foreground">About</span>
         </nav>
 
         {/* Mission statement */}
-        <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-4">our mission</p>
-        <h1 className="text-3xl md:text-4xl font-extralight tracking-tight text-foreground mb-6">
-          {siteName ? `about ${siteName.toLowerCase()}.` : "about us."}
+        <p className="text-eyebrow mb-4">Our mission</p>
+        <h1 className="text-display text-foreground mb-6">
+          {siteName ? `About ${siteName}` : "About us"}
         </h1>
         {resolvedAboutText ? (
-          <p className="text-sm font-light leading-relaxed text-foreground/60 max-w-2xl">
+          <p className="text-lead max-w-2xl">
             {resolvedAboutText}
           </p>
         ) : null}
 
-        <div className="border-b border-border/30 mt-12 mb-16" />
+        <hr className="rule mt-12 mb-16" />
 
         {/* Team section */}
         {teamMembers.length > 0 && (
           <>
-            <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-8">the team</p>
-            <div className="flex flex-col gap-10 max-w-xl mb-16">
+            <p className="text-caption mb-8">The team</p>
+            <div className="flex flex-col gap-10 mb-16">
               {teamMembers.map((member, i) => {
                 const imageUrl = normaliseImageUrl(member.image_url ?? "");
                 const profileUrl = `/authors/${nameToSlug(member.name)}/`;
@@ -169,7 +169,7 @@ export default async function AboutPage() {
                 return (
                   <div key={i} className="flex gap-5 items-start">
                     {imageUrl ? (
-                      <Link href={profileUrl} className="shrink-0 w-24 h-24 rounded-md overflow-hidden border border-border/40 hover:border-foreground/30 transition-colors">
+                      <Link href={profileUrl} className="block shrink-0 w-24 h-24 rounded-md overflow-hidden border border-border/40 hover:border-foreground/30 transition-colors">
                         <Image
                           src={imageUrl}
                           alt={member.name}
@@ -179,7 +179,7 @@ export default async function AboutPage() {
                         />
                       </Link>
                     ) : (
-                      <Link href={profileUrl} className="shrink-0 w-24 h-24 rounded-md bg-foreground/5 border border-border/40 hover:border-foreground/30 transition-colors flex items-center justify-center">
+                      <Link href={profileUrl} className="block shrink-0 w-24 h-24 rounded-md bg-foreground/5 border border-border/40 hover:border-foreground/30 transition-colors flex items-center justify-center">
                         <span className="text-2xl font-light text-foreground/40">
                           {member.name.charAt(0).toUpperCase()}
                         </span>
@@ -188,18 +188,18 @@ export default async function AboutPage() {
                     <div>
                       <Link
                         href={profileUrl}
-                        className="text-base font-light text-foreground hover:text-foreground/70 transition-colors"
+                        className="text-h4 text-foreground hover:text-accent transition-colors"
                       >
                         {member.name}
                       </Link>
                       {member.role && (
-                        <p className="text-xs font-light text-foreground/40 mb-1">{member.role}</p>
+                        <p className="text-meta mb-2">{member.role}</p>
                       )}
                       {member.credentials && (
-                        <p className="text-xs font-light text-foreground/60 mb-2 italic">{member.credentials}</p>
+                        <p className="text-body-sm text-ds-text-muted mb-2 italic">{member.credentials}</p>
                       )}
                       {member.bio && (
-                        <p className="text-sm font-light leading-relaxed text-foreground/60 max-w-lg mb-2">
+                        <p className="text-body-sm text-ds-text mb-3">
                           {member.bio}
                         </p>
                       )}
@@ -210,7 +210,7 @@ export default async function AboutPage() {
                               href={member.linkedin_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] font-light text-foreground/40 hover:text-foreground/70 transition-colors uppercase tracking-widest"
+                              className="text-caption text-ds-text-muted hover:text-accent transition-colors"
                             >
                               LinkedIn
                             </a>
@@ -220,7 +220,7 @@ export default async function AboutPage() {
                               href={member.twitter_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] font-light text-foreground/40 hover:text-foreground/70 transition-colors uppercase tracking-widest"
+                              className="text-caption text-ds-text-muted hover:text-accent transition-colors"
                             >
                               Twitter / X
                             </a>
@@ -232,21 +232,19 @@ export default async function AboutPage() {
                 );
               })}
             </div>
-            <div className="border-b border-border/30 mb-16" />
+            <hr className="rule mb-16" />
           </>
         )}
 
-        {/* Editorial standards — managed via admin site-settings */}
+        {/* Editorial standards */}
         {editorialStandards.length > 0 && (
           <>
-            <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-6">
-              editorial standards
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl">
+            <p className="text-caption mb-8">Editorial standards</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl">
               {editorialStandards.map((standard, i) => (
-                <div key={i}>
-                  <p className="text-sm font-light text-foreground mb-2">{standard.title}</p>
-                  <p className="text-xs font-light leading-relaxed text-foreground/55">
+                <div key={i} className="card p-5">
+                  <p className="text-h4 text-foreground mb-2">{standard.title}</p>
+                  <p className="text-body-sm text-ds-text">
                     {standard.body}
                   </p>
                 </div>

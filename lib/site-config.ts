@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createReadClient } from "@/lib/supabase/server";
 
 export interface TeamMember {
   name: string;
@@ -100,16 +100,7 @@ const ENV_DEFAULTS = {
 };
 
 function buildClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      global: {
-        fetch: (input: RequestInfo | URL, init?: RequestInit) =>
-          fetch(input, { ...init, next: { tags: ["site-config"] } } as RequestInit),
-      },
-    }
-  );
+  return createReadClient();
 }
 
 /**

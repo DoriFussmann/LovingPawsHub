@@ -2,7 +2,7 @@
 const nextConfig = {
   trailingSlash: true,
   experimental: {
-    serverComponentsExternalPackages: ["@anthropic-ai/sdk"],
+    serverComponentsExternalPackages: ["@anthropic-ai/sdk", "react-markdown", "remark-gfm"],
   },
   images: {
     remotePatterns: [

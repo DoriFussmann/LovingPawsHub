@@ -36,11 +36,11 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const FALLBACK_ROWS = [
-  { label: "hub", title: "the complete guide to [your topic]" },
-  { label: "guide", title: "how to get started with [your topic]" },
-  { label: "comparison", title: "top options compared: [your topic]" },
-  { label: "faq", title: "frequently asked questions about [your topic]" },
-  { label: "risk", title: "common mistakes to avoid with [your topic]" },
+  { label: "guide",      title: "the complete guide to pet nutrition" },
+  { label: "faq",        title: "how often should I take my dog to the vet?" },
+  { label: "comparison", title: "wet food vs dry food: what vets recommend" },
+  { label: "hub",        title: "cat behavior explained by behaviorists" },
+  { label: "guide",      title: "senior pet care: signs to watch for" },
 ];
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -57,78 +57,96 @@ export default function HeroSection({
 }: HeroSectionProps) {
   const [journeyOpen, setJourneyOpen] = useState(false);
 
-  const industryName = (industryNameProp || "your industry").toLowerCase();
-  const siteName = (siteNameProp || "").toLowerCase();
-  const headline = (headlineProp || siteName).toLowerCase();
-  const subheadline = subheadlineProp || "expert resources,\nClearly explained.";
+  const industryName = (industryNameProp || "pet care").toLowerCase();
+  const siteName = siteNameProp || "Loving Paws Hub";
+  const headline =
+    headlineProp ||
+    "The kindest, most useful pet care guide on the internet.";
+  const subheadline = subheadlineProp || "";
   const bodyText =
     bodyTextProp ||
-    `in-depth guides, comparisons, and analysis covering everything you need to navigate ${industryName}. written for clarity, optimised for depth.`;
-  const ctaPrimary = ctaPrimaryProp || "read the guide";
-  const ctaSecondary = ctaSecondaryProp || "browse articles";
+    `Practical, expert-backed answers about food, behavior and wellness — for the dogs and cats who run our lives.`;
+  const ctaPrimary = ctaPrimaryProp || "Start with your pet";
+  const ctaSecondary = ctaSecondaryProp || "Browse topics";
 
   const previewRows =
     recentArticles.length > 0
       ? recentArticles.map((a) => ({
           label: CONTENT_TYPE_LABELS[a.content_type] ?? a.content_type.toLowerCase(),
-          title: a.h1_title.toLowerCase(),
+          title: a.h1_title,
           href: `/${a.core_id}/${a.bridge_id}/${a.slug}`,
         }))
       : FALLBACK_ROWS.map((r) => ({ ...r, href: "/articles" }));
 
   return (
-    <section className="flex items-start pt-16 pb-20 overflow-hidden">
-      <div className="max-w-[1280px] mx-auto px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+    <section className="pt-16 pb-20 overflow-hidden">
+      <div className="max-w-[1280px] mx-auto px-6 md:px-14">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-20 items-center">
 
           {/* ── Left column ── */}
           <motion.div
-            initial={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease }}
+            transition={{ duration: 0.8, ease }}
           >
-            <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-7">
-              {industryName}
-            </p>
+            {/* Eyebrow */}
+            <p className="text-eyebrow mb-7">{industryName} · vet-reviewed</p>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extralight leading-[1.1] tracking-tight text-foreground mb-5">
+            {/* Headline */}
+            <h1
+              className="text-display-xl text-foreground mb-6"
+              style={{ color: "var(--foreground)" }}
+            >
               {headline}
             </h1>
 
-            <p className="text-xl md:text-2xl font-thin text-muted-foreground/70 mb-7 leading-snug whitespace-pre-line">
-              {subheadline}
-            </p>
+            {/* Sub-headline */}
+            {subheadline && (
+              <p className="text-lead mb-5 whitespace-pre-line">{subheadline}</p>
+            )}
 
-            <p className="text-sm font-light max-w-md leading-relaxed text-foreground/50 mb-10">
+            {/* Body */}
+            <p className="text-body-sm max-w-md text-ds-text-muted mb-10">
               {bodyText}
             </p>
 
+            {/* CTAs */}
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={() => setJourneyOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-light hover:bg-sage-800 transition-colors"
+                className="btn btn-primary btn-lg"
               >
                 {ctaPrimary}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2 6h8M7 3l3 3-3 3" />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14m-6-6 6 6-6 6" />
                 </svg>
               </button>
 
-              <Link
-                href="/articles"
-                className="inline-flex items-center px-5 py-2.5 rounded-lg border border-accent/30 text-sm font-light text-accent hover:bg-sage-50 hover:border-accent/60 transition-colors"
-              >
+              <Link href="/articles" className="btn btn-ghost btn-lg">
                 {ctaSecondary}
               </Link>
+            </div>
+
+            {/* Social proof */}
+            <div className="flex items-center gap-3 mt-8 text-ds-text-muted text-sm">
+              <div className="flex">
+                {["DR", "MK", "JC", "SO"].map((initials, i) => (
+                  <span
+                    key={initials}
+                    className="avatar"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      fontSize: 10,
+                      marginLeft: i > 0 ? -8 : 0,
+                      border: "2px solid var(--background)",
+                    }}
+                  >
+                    {initials}
+                  </span>
+                ))}
+              </div>
+              <span>Expert-reviewed content from working vets.</span>
             </div>
 
             <JourneyModal
@@ -137,61 +155,66 @@ export default function HeroSection({
             />
           </motion.div>
 
-          {/* ── Right column — app preview card (desktop only) ── */}
+          {/* ── Right column — article preview card ── */}
           <motion.div
             className="hidden lg:block"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.0, ease, delay: 0.3 }}
+            transition={{ duration: 1.0, ease, delay: 0.25 }}
           >
-            <div className="border border-border rounded-xl bg-card overflow-hidden shadow-sh2">
-
-              {/* Mini navbar */}
-              <div className="border-b border-border/40 px-4 py-2.5 flex items-center justify-between">
-                <span className="text-[10px] font-light tracking-wide text-foreground/50">
-                  {siteName}
-                  <span className="text-muted-foreground/30">.</span>
-                </span>
-                <div className="flex items-center gap-4">
-                  <span className="text-[9px] font-light text-muted-foreground/40">resources</span>
-                  <span className="text-[9px] font-light text-muted-foreground/40">about</span>
-                  <span className="text-[8px] font-light px-2 py-0.5 rounded border border-muted-foreground/20 text-muted-foreground/40">
-                    read articles
+            <div
+              className="card shadow-sh2 overflow-hidden"
+              style={{ borderRadius: "0.75rem" }}
+            >
+              {/* Mini header */}
+              <div
+                className="flex items-center justify-between px-5 py-3 border-b border-border"
+                style={{ background: "var(--muted)" }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: "var(--accent)" }}
+                  />
+                  <span className="text-[11px] font-medium text-foreground tracking-[-0.01em]">
+                    {siteName}
                   </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  {["articles", "glossary", "tools"].map((l) => (
+                    <span key={l} className="text-[10px] text-ds-text-muted">
+                      {l}
+                    </span>
+                  ))}
                 </div>
               </div>
 
-              {/* Page label */}
-              <div className="px-4 pt-4 pb-2">
-                <p className="text-[9px] tracking-widest uppercase text-foreground/25 mb-3">
-                  articles.
-                </p>
+              {/* Content label */}
+              <div className="px-5 pt-4 pb-2">
+                <p className="text-eyebrow mb-3">latest articles</p>
 
                 {/* Filter pills */}
                 <div className="flex items-center gap-1.5 mb-4">
-                  <span className="text-[8px] font-light px-2 py-0.5 rounded border border-foreground/25 text-foreground/60">
-                    all topics
-                  </span>
-                  <span className="text-[8px] font-light px-2 py-0.5 rounded border border-border/50 text-muted-foreground/40">
-                    guides
-                  </span>
-                  <span className="text-[8px] font-light px-2 py-0.5 rounded border border-border/50 text-muted-foreground/40">
-                    faqs
-                  </span>
+                  <span className="tag">all topics</span>
+                  <span className="tag tag-ghost">dogs</span>
+                  <span className="tag tag-ghost">cats</span>
                 </div>
               </div>
 
               {/* Article rows */}
-              <div className="px-4 pb-1">
+              <div className="px-5 pb-1">
                 {previewRows.slice(0, 5).map((row, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2.5 py-2.5 border-b border-border/20 last:border-0"
+                    className="flex items-center gap-3 py-3 border-b border-border last:border-0"
                   >
-                    <span className="shrink-0 text-[7px] tracking-widest uppercase font-medium text-muted-foreground/40 border border-border/40 rounded px-1 py-0.5">
+                    <span
+                      className="tag tag-ghost shrink-0"
+                      style={{ fontSize: "9px", padding: "2px 6px" }}
+                    >
                       {row.label}
                     </span>
-                    <span className="text-[10px] font-light text-foreground/65 line-clamp-1 leading-snug">
+                    <span className="text-[12px] font-light text-foreground/70 line-clamp-1 leading-snug">
                       {row.title}
                     </span>
                   </div>
@@ -199,18 +222,26 @@ export default function HeroSection({
               </div>
 
               {/* Card footer */}
-              <div className="px-4 py-3 border-t border-border/20 flex items-center justify-between">
-                <span className="text-[8px] text-muted-foreground/30 font-light">
+              <div
+                className="px-5 py-3 flex items-center justify-between border-t border-border"
+                style={{ background: "var(--muted)" }}
+              >
+                <span className="text-[10px] text-ds-text-muted">
                   {recentArticles.length > 0
                     ? `${recentArticles.length} article${recentArticles.length !== 1 ? "s" : ""}`
                     : "articles"}
                 </span>
                 <div className="flex items-center gap-1">
-                  <div className="w-8 h-0.5 rounded-full bg-border/40" />
-                  <div className="w-4 h-0.5 rounded-full bg-border/20" />
+                  <div
+                    className="w-8 h-0.5 rounded-full"
+                    style={{ background: "var(--border-strong)" }}
+                  />
+                  <div
+                    className="w-4 h-0.5 rounded-full"
+                    style={{ background: "var(--border)" }}
+                  />
                 </div>
               </div>
-
             </div>
           </motion.div>
 

@@ -68,15 +68,31 @@ export default async function LinksPage() {
       const clusterMap = new Map<string, ClusterLinkData>();
 
       for (const a of articles) {
+        let clusterDbId: string;
+        let clusterId: string;
+        let displayName: string;
+        let linkHealth: string | null = null;
+        let lastLinkCheck: string | null = null;
+
         const skeleton = a.article_skeletons as unknown as Record<string, unknown> | null;
         const clusterRaw = skeleton?.clusters as Record<string, unknown> | null;
-        if (!clusterRaw) continue;
 
-        const clusterDbId = clusterRaw.id as string;
-        const clusterId = clusterRaw.cluster_id as string;
-        const displayName = clusterRaw.display_name as string;
-        const linkHealth = (clusterRaw.link_health as string | null) ?? null;
-        const lastLinkCheck = (clusterRaw.last_link_check as string | null) ?? null;
+        if (clusterRaw) {
+          clusterDbId = clusterRaw.id as string;
+          clusterId = clusterRaw.cluster_id as string;
+          displayName = clusterRaw.display_name as string;
+          linkHealth = (clusterRaw.link_health as string | null) ?? null;
+          lastLinkCheck = (clusterRaw.last_link_check as string | null) ?? null;
+        } else {
+          // Article was published without a skeleton — group by bridge_id
+          const bridgeKey = `${a.core_id}__${a.bridge_id}`;
+          clusterDbId = bridgeKey;
+          clusterId = bridgeKey;
+          displayName = a.bridge_id
+            .split("-")
+            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" ");
+        }
 
         if (!clusterMap.has(clusterDbId)) {
           clusterMap.set(clusterDbId, {

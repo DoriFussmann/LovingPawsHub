@@ -300,6 +300,22 @@ ALTER TABLE glossary_terms DISABLE ROW LEVEL SECURITY;
 ALTER TABLE settings DISABLE ROW LEVEL SECURITY;
 ALTER TABLE site_config DISABLE ROW LEVEL SECURITY;
 
+-- ── Grant public read access (anon + authenticated roles) ──────────────────────
+-- Required because CREATE TABLE only grants to the owner (postgres).
+-- The anon key uses the 'anon' role; authenticated users use 'authenticated'.
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON industry TO anon, authenticated;
+GRANT SELECT ON resources TO anon, authenticated;
+GRANT SELECT ON core_keywords TO anon, authenticated;
+GRANT SELECT ON bridge_keywords TO anon, authenticated;
+GRANT SELECT ON clusters TO anon, authenticated;
+GRANT SELECT ON article_skeletons TO anon, authenticated;
+GRANT SELECT ON articles TO anon, authenticated;
+GRANT SELECT ON link_check_log TO anon, authenticated;
+GRANT SELECT ON glossary_terms TO anon, authenticated;
+GRANT SELECT ON settings TO anon, authenticated;
+GRANT SELECT ON site_config TO anon, authenticated;
+
 -- ── HomeTracker ───────────────────────────────────────────────────────────────
 -- User-scoped property tracking. Requires Supabase Auth (auth.users).
 -- Run after enabling Email auth in Supabase dashboard → Authentication → Providers.

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createReadClient } from "@/lib/supabase/server";
 import ArticlesGrid from "./ArticlesGrid";
 import { siteUrl } from "@/lib/site-url";
 import { getSiteConfig, cfg } from "@/lib/site-config";
@@ -74,7 +74,7 @@ export default async function ArticlesPage({
   let coreKeywords: Array<{ core_id: string; keyword: string }> = [];
 
   try {
-    const supabase = createClient();
+    const supabase = createReadClient();
     const [articlesRes, countRes, coresRes] = await Promise.all([
       supabase
         .from("articles")
@@ -105,14 +105,10 @@ export default async function ArticlesPage({
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-12">
-      <div className="mb-8">
-        <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-2">
-          resources
-        </p>
-        <h1 className="text-2xl font-extralight tracking-tight text-foreground">
-          articles.
-        </h1>
+    <div className="max-w-[1280px] mx-auto px-6 md:px-14 py-12">
+      <div className="mb-10">
+        <p className="text-eyebrow mb-3">Resources</p>
+        <h1 className="text-display text-foreground">Articles</h1>
       </div>
       <Suspense fallback={null}>
         <ArticlesGrid

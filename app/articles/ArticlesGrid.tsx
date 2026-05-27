@@ -77,27 +77,19 @@ export default function ArticlesGrid({
 
   return (
     <div>
-      {/* Core topic buttons */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      {/* Core topic filter chips */}
+      <div className="flex flex-wrap gap-2 mb-5">
         <button
           onClick={() => setSelectedCore("")}
-          className={`px-3 py-1.5 text-xs font-light rounded-full border transition-colors ${
-            selectedCore === ""
-              ? "border-foreground bg-foreground text-background"
-              : "border-border text-foreground/60 hover:border-foreground/40 hover:text-foreground"
-          }`}
+          className={selectedCore === "" ? "tag tag-ink" : "tag tag-ghost hover:tag"}
         >
-          all topics
+          All topics
         </button>
         {coreKeywords.map((c) => (
           <button
             key={c.core_id}
             onClick={() => setSelectedCore(selectedCore === c.core_id ? "" : c.core_id)}
-            className={`px-3 py-1.5 text-xs font-light rounded-full border transition-colors ${
-              selectedCore === c.core_id
-                ? "border-foreground bg-foreground text-background"
-                : "border-border text-foreground/60 hover:border-foreground/40 hover:text-foreground"
-            }`}
+            className={selectedCore === c.core_id ? "tag tag-ink" : "tag tag-ghost"}
           >
             {c.keyword}
           </button>
@@ -105,23 +97,37 @@ export default function ArticlesGrid({
       </div>
 
       {/* Search + count */}
-      <div className="flex items-center gap-3 mb-6">
-        <input
-          type="text"
-          placeholder="search articles..."
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="text-xs font-light rounded-md border border-border px-3 py-2 bg-background placeholder:text-muted-foreground focus:outline-none focus:border-foreground/50 w-72"
-        />
+      <div className="flex items-center gap-3 mb-7">
+        <div className="relative">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-ds-text-muted"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search articles…"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="input pl-9 h-9 text-sm w-72"
+          />
+        </div>
         {search && (
           <button
             onClick={handleClearSearch}
-            className="text-xs font-light text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-ds-text-muted hover:text-foreground transition-colors"
           >
-            clear
+            Clear
           </button>
         )}
-        <span className="text-xs font-light text-muted-foreground ml-auto">
+        <span className="text-meta ml-auto">
           {search || selectedCore
             ? `${filtered.length} of ${articles.length}`
             : `${totalCount} total`}{" "}
@@ -130,37 +136,31 @@ export default function ArticlesGrid({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-sm font-light text-muted-foreground">no articles found.</p>
+        <div className="py-16 text-center card">
+          <p className="text-body text-ds-text-muted">No articles found.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))}
         </div>
       )}
 
-      {/* Pagination — only when not actively filtering */}
+      {/* Pagination */}
       {totalPages > 1 && !search && !selectedCore && (
-        <div className="flex items-center justify-center gap-3 mt-10">
+        <div className="flex items-center justify-center gap-3 mt-12">
           {currentPage > 1 && (
-            <Link
-              href={`/articles?page=${currentPage - 1}`}
-              className="px-4 py-2 text-xs font-light border border-border rounded-md text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-colors"
-            >
-              ← prev
+            <Link href={`/articles?page=${currentPage - 1}`} className="btn btn-secondary btn-sm">
+              ← Prev
             </Link>
           )}
-          <span className="text-xs font-light text-muted-foreground">
-            page {currentPage} of {totalPages}
+          <span className="text-meta">
+            Page {currentPage} of {totalPages}
           </span>
           {currentPage < totalPages && (
-            <Link
-              href={`/articles?page=${currentPage + 1}`}
-              className="px-4 py-2 text-xs font-light border border-border rounded-md text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-colors"
-            >
-              next →
+            <Link href={`/articles?page=${currentPage + 1}`} className="btn btn-secondary btn-sm">
+              Next →
             </Link>
           )}
         </div>

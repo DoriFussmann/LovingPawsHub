@@ -83,7 +83,7 @@ function TOCSidebar({ items, activeAnchor }: { items: TOCItem[]; activeAnchor: s
 
   return (
     <nav aria-label="Table of contents">
-      <p className="text-[9px] tracking-widest uppercase text-foreground/30 mb-4">contents</p>
+      <p className="text-caption mb-4">In this article</p>
       <ul className="space-y-0.5">
         {items.map((item, i) => {
           const anchor = slugify(item.text);
@@ -94,11 +94,11 @@ function TOCSidebar({ items, activeAnchor }: { items: TOCItem[]; activeAnchor: s
               <button
                 onClick={() => scrollTo(item.text)}
                 className={`w-full text-left transition-colors duration-200 leading-snug py-1 border-l-2 ${
-                  isH3 ? "text-[11px]" : "text-xs"
+                  isH3 ? "text-[11px] pl-5" : "text-xs pl-3"
                 } ${
                   isActive
-                    ? "border-foreground/50 pl-3 text-foreground"
-                    : "border-transparent pl-3 text-foreground/35 hover:text-foreground/60 font-light"
+                    ? "border-accent text-foreground font-medium"
+                    : "border-transparent text-ds-text-muted hover:text-foreground font-light"
                 }`}
               >
                 {item.text}
@@ -122,21 +122,21 @@ function MobileTOC({ items }: { items: TOCItem[]; activeAnchor?: string }) {
   }
 
   return (
-    <div className="border border-border rounded-md mb-8 lg:hidden">
+    <div className="card mb-8 lg:hidden overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between w-full px-4 py-3"
       >
-        <span className="text-[10px] tracking-widest uppercase text-foreground/40">contents</span>
-        {open ? <ChevronUp size={13} className="text-foreground/40" /> : <ChevronDown size={13} className="text-foreground/40" />}
+        <span className="text-caption">In this article</span>
+        {open ? <ChevronUp size={13} className="text-ds-text-muted" /> : <ChevronDown size={13} className="text-ds-text-muted" />}
       </button>
       {open && (
-        <nav className="border-t border-border/50 px-4 py-3 space-y-2">
+        <nav className="border-t border-border px-4 py-3 space-y-2">
           {items.map((item, i) => (
             <button
               key={i}
               onClick={() => scrollTo(item.text)}
-              className={`block w-full text-left text-xs font-light text-foreground/60 hover:text-foreground transition-colors ${
+              className={`block w-full text-left text-xs text-ds-text-muted hover:text-foreground transition-colors ${
                 item.heading_level === "h3" ? "pl-4" : ""
               }`}
             >
@@ -175,16 +175,16 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
   }, []);
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-12">
+    <div className="max-w-[1280px] mx-auto px-6 md:px-14 py-12">
 
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-light text-muted-foreground mb-10 flex-wrap">
-        <Link href="/" className="hover:text-foreground transition-colors">home</Link>
-        <span>/</span>
-        <Link href={`/${article.core_id}/`} className="hover:text-foreground transition-colors capitalize">{coreLabel}</Link>
-        <span>/</span>
-        <Link href={`/${article.core_id}/${article.bridge_id}/`} className="hover:text-foreground transition-colors capitalize">{bridgeLabel}</Link>
-        <span>/</span>
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-10 flex-wrap">
+        <Link href="/" className="hover:text-accent transition-colors">Home</Link>
+        <span className="text-border-strong">/</span>
+        <Link href={`/${article.core_id}/`} className="hover:text-accent transition-colors capitalize">{coreLabel}</Link>
+        <span className="text-border-strong">/</span>
+        <Link href={`/${article.core_id}/${article.bridge_id}/`} className="hover:text-accent transition-colors capitalize">{bridgeLabel}</Link>
+        <span className="text-border-strong">/</span>
         <span className="text-foreground line-clamp-1">{article.h1_title}</span>
       </nav>
 
@@ -202,19 +202,19 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                 <> &nbsp;·&nbsp; {formatDate(article.published_at)}</>
               )}
             </p>
-            <h1 className="text-3xl md:text-4xl font-extralight leading-[1.2] tracking-tight text-foreground">
+            <h1 className="text-h1 text-foreground mb-4">
               {article.h1_title}
             </h1>
             {article.reviewer_name && (
-              <p className="text-xs font-light text-foreground/50 mt-2">
-                by <span>{article.reviewer_name}</span>
+              <p className="text-meta mt-2">
+                by {article.reviewer_name}
               </p>
             )}
             {article.updated_at &&
               article.published_at &&
               article.updated_at !== article.published_at && (
-                <p className="text-[10px] tracking-widest uppercase text-foreground/30 mt-1">
-                  updated {formatDate(article.updated_at)}
+                <p className="text-meta mt-1">
+                  Updated {formatDate(article.updated_at)}
                 </p>
               )}
           </div>
@@ -246,11 +246,16 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
 
           {/* Key Highlights */}
           {article.key_highlights && article.key_highlights.length > 0 && (
-            <div className="border border-border rounded-md px-5 py-4 mb-8 bg-muted/20">
-              <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-3">key highlights</p>
-              <ul className="list-disc list-outside pl-5 space-y-1.5">
+            <div
+              className="rounded-lg px-5 py-5 mb-8"
+              style={{ background: "var(--primary-soft)" }}
+            >
+              <p className="text-caption mb-4" style={{ color: "var(--primary-strong)" }}>
+                Key highlights
+              </p>
+              <ul className="list-disc list-outside pl-5 space-y-2">
                 {article.key_highlights.map((point, i) => (
-                  <li key={i} className="text-sm font-light text-foreground/80 leading-relaxed">
+                  <li key={i} className="text-body-sm text-foreground">
                     {point}
                   </li>
                 ))}
@@ -269,8 +274,8 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                   return (
                     <h2
                       id={anchor}
-                      className={`text-xl font-light mt-10 mb-3 scroll-mt-20 transition-colors duration-300 ${
-                        isActive ? "text-sage-600" : "text-foreground"
+                      className={`text-h2 mt-10 mb-3 scroll-mt-24 transition-colors duration-300 ${
+                        isActive ? "text-accent" : "text-foreground"
                       }`}
                     >
                       {children}
@@ -283,8 +288,8 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                   return (
                     <h3
                       id={anchor}
-                      className={`text-base font-light mt-7 mb-2 scroll-mt-20 transition-colors duration-300 ${
-                        isActive ? "text-sage-500" : "text-foreground"
+                      className={`text-h3 mt-7 mb-2 scroll-mt-24 transition-colors duration-300 ${
+                        isActive ? "text-accent" : "text-foreground"
                       }`}
                     >
                       {children}
@@ -292,7 +297,7 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                   );
                 },
                 p: ({ children }) => (
-                  <p className="text-base font-light leading-relaxed mb-4 text-foreground/90">
+                  <p className="text-body text-ds-text mb-4">
                     {children}
                   </p>
                 ),
@@ -308,14 +313,14 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                       {...(!isInternal
                         ? { target: "_blank", rel: "noopener noreferrer" }
                         : {})}
-                      className="text-sage-700 underline underline-offset-2 decoration-sage-700/30 hover:text-sage-800 hover:decoration-sage-700 transition-colors"
+                      className="text-accent underline underline-offset-2 decoration-accent/30 hover:decoration-accent transition-colors"
                     >
                       {children}
                     </a>
                   );
                 },
                 strong: ({ children }) => (
-                  <strong className="font-medium text-foreground">{children}</strong>
+                  <strong className="font-semibold text-foreground">{children}</strong>
                 ),
                 img: ({ src, alt }) => {
                   if (!src) return null;
@@ -338,17 +343,24 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                   <em className="italic">{children}</em>
                 ),
                 blockquote: ({ children }) => (
-                  <blockquote className="border-l-2 border-border pl-4 text-muted-foreground font-light italic my-4">
+                  <blockquote
+                    className="border-l-2 pl-4 italic my-4 rounded-r-md px-4 py-3"
+                    style={{
+                      borderColor: "var(--accent)",
+                      background: "var(--primary-soft)",
+                      color: "var(--primary-strong)",
+                    }}
+                  >
                     {children}
                   </blockquote>
                 ),
                 ul: ({ children }) => (
-                  <ul className="list-disc list-outside pl-5 mb-4 space-y-1 text-base font-light text-foreground/90">
+                  <ul className="list-disc list-outside pl-5 mb-4 space-y-1 text-body text-ds-text">
                     {children}
                   </ul>
                 ),
                 ol: ({ children }) => (
-                  <ol className="list-decimal list-outside pl-5 mb-4 space-y-1 text-base font-light text-foreground/90">
+                  <ol className="list-decimal list-outside pl-5 mb-4 space-y-1 text-body text-ds-text">
                     {children}
                   </ol>
                 ),
@@ -356,32 +368,37 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                   <li className="leading-relaxed">{children}</li>
                 ),
                 table: ({ children }) => (
-                  <div className="overflow-x-auto mb-4">
-                    <table className="w-full text-sm font-light border-collapse">{children}</table>
+                  <div className="overflow-x-auto mb-4 card overflow-hidden">
+                    <table className="w-full text-sm border-collapse">{children}</table>
                   </div>
                 ),
                 thead: ({ children }) => (
-                  <thead className="border-b border-border">{children}</thead>
+                  <thead style={{ background: "var(--muted)" }}>{children}</thead>
                 ),
                 th: ({ children }) => (
-                  <th className="text-left px-3 py-2 text-[10px] font-medium uppercase tracking-widest text-foreground/40">
+                  <th className="text-left px-4 py-3 text-caption text-ds-text-muted border-b border-border">
                     {children}
                   </th>
                 ),
                 td: ({ children }) => (
-                  <td className="px-3 py-2 border-b border-border/20 text-foreground/90">{children}</td>
+                  <td className="px-4 py-3 border-b border-border text-ds-text text-sm">{children}</td>
                 ),
                 code: ({ children, className }) => {
                   const isBlock = className?.startsWith("language-");
                   if (isBlock) {
                     return (
-                      <code className="block bg-muted rounded-md p-3 text-xs font-light overflow-x-auto mb-4">
+                      <code className="block rounded-lg p-4 text-xs overflow-x-auto mb-4" style={{ background: "var(--foreground)", color: "var(--card)" }}>
                         {children}
                       </code>
                     );
                   }
                   return (
-                    <code className="bg-muted rounded px-1 py-0.5 text-xs font-light">{children}</code>
+                    <code
+                      className="rounded px-1.5 py-0.5 text-xs font-medium"
+                      style={{ background: "var(--primary-soft)", color: "var(--primary-strong)" }}
+                    >
+                      {children}
+                    </code>
                   );
                 },
               }}
@@ -400,16 +417,16 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
 
           {/* Related Articles */}
           {article.related_articles && article.related_articles.length > 0 && (
-            <div className="border-t border-border/30 mt-12 pt-8">
-              <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-4">related articles</p>
+            <div className="border-t border-border mt-12 pt-8">
+              <p className="text-caption mb-5">Related articles</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {article.related_articles.map((related) => (
                   <Link
                     key={related.article_id}
                     href={`/${related.core_id ?? article.core_id}/${related.bridge_id ?? article.bridge_id}/${related.slug}/`}
-                    className="border border-border rounded-md p-3 hover:bg-muted/50 transition-colors"
+                    className="card card-hover p-4 block"
                   >
-                    <p className="text-xs font-light text-foreground leading-snug">{related.title}</p>
+                    <p className="text-body-sm text-foreground leading-snug">{related.title}</p>
                   </Link>
                 ))}
               </div>
@@ -418,11 +435,11 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
 
           {/* Author box */}
           {author && (
-            <div className="border-t border-border/30 mt-12 pt-8">
-              <p className="text-[10px] tracking-widests uppercase text-foreground/40 mb-5">about the author</p>
+            <div className="border-t border-border mt-12 pt-8">
+              <p className="text-caption mb-5">About the author</p>
               <div className="flex gap-4 items-start">
                 {author.image_url ? (
-                  <div className="shrink-0 w-14 h-14 rounded-md overflow-hidden border border-border/40">
+                  <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-border">
                     <Image
                       src={author.image_url}
                       alt={author.name}
@@ -433,19 +450,17 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
                     />
                   </div>
                 ) : (
-                  <div className="shrink-0 w-14 h-14 rounded-md bg-foreground/5 border border-border/40 flex items-center justify-center">
-                    <span className="text-lg font-light text-foreground/40">
-                      {author.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  <span className="avatar" style={{ width: 56, height: 56, fontSize: 18 }}>
+                    {author.name.charAt(0).toUpperCase()}
+                  </span>
                 )}
                 <div>
-                  <p className="text-sm font-light text-foreground mb-0.5">{author.name}</p>
+                  <p className="text-h4 text-foreground mb-0.5">{author.name}</p>
                   {author.role && (
-                    <p className="text-[11px] font-light text-foreground/40 mb-1.5">{author.role}</p>
+                    <p className="text-meta mb-2">{author.role}</p>
                   )}
                   {author.bio && (
-                    <p className="text-xs font-light leading-relaxed text-foreground/55 max-w-lg">
+                    <p className="text-body-sm text-ds-text max-w-lg">
                       {author.bio}
                     </p>
                   )}
@@ -462,9 +477,9 @@ export default function ArticlePage({ article, coreLabel, bridgeLabel, author }:
             <ShareButtons url={articleUrl} title={article.h1_title} variant="sidebar" />
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-light rounded-md border border-border text-foreground/60 hover:bg-muted hover:text-foreground transition-colors"
+              className="btn btn-secondary btn-sm w-full justify-center"
             >
-              ↑ back to top
+              ↑ Back to top
             </button>
           </div>
         </aside>

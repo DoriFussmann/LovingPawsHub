@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import HeroSection from "@/components/public/HeroSection";
 import LogoBanner from "@/components/public/LogoBanner";
-import { createClient } from "@/lib/supabase/server";
+import { createReadClient } from "@/lib/supabase/server";
 import { getSiteConfig, cfg } from "@/lib/site-config";
 import { siteUrl } from "@/lib/site-url";
 
@@ -58,7 +58,7 @@ export default async function HomePage() {
   }> = [];
 
   try {
-    const supabase = createClient();
+    const supabase = createReadClient();
 
     const { data: recentData } = await supabase
       .from("articles")
@@ -98,21 +98,29 @@ export default async function HomePage() {
       />
 
       {/* Featured Articles */}
-      <section className="py-20 border-t border-border/30">
-        <div className="max-w-[1280px] mx-auto px-6 md:px-8">
-          <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-4">explore</p>
-          <h2 className="text-2xl md:text-3xl font-extralight tracking-tight text-foreground mb-10">
-            featured articles
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <section className="py-20 border-t border-border">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-14">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-eyebrow mb-3">explore</p>
+              <h2 className="text-display text-foreground">
+                Featured articles
+              </h2>
+            </div>
+            <Link href="/articles" className="btn btn-ghost btn-sm hidden sm:inline-flex">
+              All articles →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {coreArticles.length > 0 ? (
               coreArticles.map((a) => (
                 <Link
                   key={a.id}
                   href={`/${a.core_id}/${a.bridge_id}/${a.slug}/`}
-                  className="flex items-center justify-between px-5 py-4 rounded-md border border-border hover:border-foreground/30 hover:bg-muted/30 transition-colors group"
+                  className="card card-hover flex items-center justify-between px-5 py-4 group"
                 >
-                  <span className="text-sm font-light text-foreground/80 group-hover:text-foreground transition-colors leading-snug">
+                  <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors leading-snug">
                     {a.h1_title}
                   </span>
                   <svg
@@ -122,16 +130,16 @@ export default async function HomePage() {
                     strokeWidth={1.2}
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="shrink-0 ml-3 text-foreground/20 group-hover:text-foreground/50 transition-colors w-3 h-3"
+                    className="shrink-0 ml-3 w-3 h-3 text-accent opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <path d="M2 6h8M7 3l3 3-3 3" />
                   </svg>
                 </Link>
               ))
             ) : (
-              <div className="flex items-center justify-between px-5 py-4 rounded-md border border-border">
-                <span className="text-sm font-light text-foreground/80 leading-snug">
-                  articles coming soon
+              <div className="card px-5 py-4">
+                <span className="text-sm text-ds-text-muted">
+                  Articles coming soon.
                 </span>
               </div>
             )}
@@ -141,26 +149,24 @@ export default async function HomePage() {
 
       {/* Who We Are — controlled via admin site-settings */}
       {(cfg(config, "homepage_about_headline") || cfg(config, "homepage_about_text")) && (
-        <section className="py-20 border-t border-border/30">
-          <div className="max-w-[1280px] mx-auto px-6 md:px-8">
+        <section className="py-20 border-t border-border" style={{ background: "var(--muted)" }}>
+          <div className="max-w-[1280px] mx-auto px-6 md:px-14">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
               <div>
-                <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-4">
-                  who we are
-                </p>
-                <h2 className="text-2xl md:text-3xl font-extralight tracking-tight text-foreground mb-6">
+                <p className="text-eyebrow mb-4">who we are</p>
+                <h2 className="text-display text-foreground">
                   {cfg(config, "homepage_about_headline")}
                 </h2>
               </div>
               <div>
-                <p className="text-sm font-light leading-relaxed text-foreground/70 mb-4">
+                <p className="text-body text-ds-text mb-5">
                   {cfg(config, "homepage_about_text")}
                 </p>
                 <Link
                   href="/about/"
-                  className="inline-flex items-center gap-1.5 text-sm font-light text-foreground/50 hover:text-foreground transition-colors mt-2"
+                  className="btn btn-secondary btn-sm"
                 >
-                  meet the team &rarr;
+                  Meet the team →
                 </Link>
               </div>
             </div>

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { createClient } from "@supabase/supabase-js";
 import {
   generateArticleMetadata,
   generateBreadcrumbSchema,
@@ -10,14 +9,10 @@ import {
 import { siteUrl } from "@/lib/site-url";
 import { getSiteConfig, cfg } from "@/lib/site-config";
 import ArticlePage from "@/components/public/ArticlePage";
+import { createReadClient } from "@/lib/supabase/server";
 
-// Plain cookie-free Supabase client — safe for ISR, static, and dynamic contexts.
-// Public pages only read published articles, so the anon key + RLS is sufficient.
 function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  return createReadClient();
 }
 
 export const revalidate = 3600;

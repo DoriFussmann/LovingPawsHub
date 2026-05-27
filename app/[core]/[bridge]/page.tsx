@@ -1,17 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { createReadClient } from "@/lib/supabase/server";
 import ArticleCard from "@/components/public/ArticleCard";
 import { siteUrl } from "@/lib/site-url";
 import { generateBridgeBreadcrumbSchema } from "@/lib/seo";
 import { getSiteConfig, cfg } from "@/lib/site-config";
 
 function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  return createReadClient();
 }
 
 export const revalidate = 3600;

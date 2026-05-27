@@ -34,55 +34,58 @@ function formatDate(dateStr: string): string {
 }
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
-  HUB: "hub",
-  FAQ: "faq",
+  HUB:        "hub",
+  FAQ:        "faq",
   COMPARISON: "comparison",
-  RISK: "risk",
-  GUIDE: "guide",
-  CORE: "core",
+  RISK:       "risk",
+  GUIDE:      "guide",
+  CORE:       "core",
 };
 
 export default function ArticleCard({ article }: ArticleCardProps) {
   const readingTime = estimateReadingTime(article.body_markdown);
   const href = `/${article.core_id}/${article.bridge_id}/${article.slug}/`;
+  const typeLabel = CONTENT_TYPE_LABELS[article.content_type] ?? article.content_type.toLowerCase();
 
   return (
-    <Link href={href}>
-      <div className="border border-border rounded-md overflow-hidden hover:bg-muted/50 transition-colors h-full flex flex-col">
+    <Link href={href} className="block group h-full">
+      <div className="card card-hover h-full flex flex-col overflow-hidden">
         {article.featured_image_url && (
-          <div className="relative w-full aspect-[16/9] bg-muted flex-shrink-0">
+          <div className="relative w-full aspect-[16/9] bg-muted flex-shrink-0 overflow-hidden">
             <Image
               src={article.featured_image_url}
               alt={article.featured_image_alt ?? article.h1_title}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+              unoptimized={
+                !article.featured_image_url.includes(".supabase.co") &&
+                !article.featured_image_url.includes("images.unsplash.com") &&
+                !article.featured_image_url.includes(".blob.core.windows.net")
+              }
             />
           </div>
         )}
-        <div className="p-4 flex flex-col justify-between gap-3 flex-1">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[9px] tracking-widest uppercase font-medium text-muted-foreground border border-border/50 rounded px-1.5 py-0.5">
-                {CONTENT_TYPE_LABELS[article.content_type] ?? article.content_type}
-              </span>
-              {article.is_core_article && article.content_type !== "CORE" && (
-                <span className="text-[9px] tracking-widests uppercase font-medium text-foreground border border-foreground/20 rounded px-1.5 py-0.5">
-                  core
-                </span>
-              )}
-            </div>
-            <h2 className="text-sm font-light text-foreground leading-snug">
-              {article.h1_title}
-            </h2>
+
+        <div className="p-5 flex flex-col gap-3 flex-1">
+          {/* Tags */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="tag">{typeLabel}</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground font-light">
-              {article.published_at ? formatDate(article.published_at) : article.primary_keyword}
+
+          {/* Title */}
+          <h2 className="text-h4 text-foreground leading-snug group-hover:text-accent transition-colors flex-1">
+            {article.h1_title}
+          </h2>
+
+          {/* Meta */}
+          <div className="flex items-center justify-between pt-1 border-t border-border">
+            <span className="text-meta">
+              {article.published_at
+                ? formatDate(article.published_at)
+                : article.primary_keyword}
             </span>
-            <span className="text-[10px] text-muted-foreground font-light">
-              {readingTime}
-            </span>
+            <span className="text-meta">{readingTime}</span>
           </div>
         </div>
       </div>
