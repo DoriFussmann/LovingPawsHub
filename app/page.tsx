@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import HeroSection from "@/components/public/HeroSection";
 import LogoBanner from "@/components/public/LogoBanner";
 import { createReadClient } from "@/lib/supabase/server";
 import { getSiteConfig, cfg } from "@/lib/site-config";
 import { siteUrl } from "@/lib/site-url";
+
+const ARTICLE_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&h=360&fit=crop",
+  "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&h=360&fit=crop",
+  "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=360&fit=crop",
+  "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=600&h=360&fit=crop",
+  "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&h=360&fit=crop",
+  "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&h=360&fit=crop",
+];
 
 export const revalidate = 3600;
 
@@ -55,6 +65,7 @@ export default async function HomePage() {
     bridge_id: string;
     slug: string;
     primary_keyword: string;
+    featured_image_url: string | null;
   }> = [];
 
   try {
@@ -69,7 +80,7 @@ export default async function HomePage() {
 
     const { data: coreData } = await supabase
       .from("articles")
-      .select("id, h1_title, core_id, bridge_id, slug, primary_keyword")
+      .select("id, h1_title, core_id, bridge_id, slug, primary_keyword, featured_image_url")
       .eq("status", "published")
       .eq("is_core_article", true)
       .order("article_id", { ascending: true });
@@ -104,7 +115,7 @@ export default async function HomePage() {
             <div>
               <p className="text-eyebrow mb-3">explore</p>
               <h2 className="text-display text-foreground">
-                Featured articles
+                featured articles
               </h2>
             </div>
             <Link href="/articles" className="btn btn-ghost btn-sm hidden sm:inline-flex">
@@ -112,30 +123,49 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {coreArticles.length > 0 ? (
-              coreArticles.map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/${a.core_id}/${a.bridge_id}/${a.slug}/`}
-                  className="card card-hover flex items-center justify-between px-5 py-4 group"
-                >
-                  <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors leading-snug">
-                    {a.h1_title}
-                  </span>
-                  <svg
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="shrink-0 ml-3 w-3 h-3 text-accent opacity-0 group-hover:opacity-100 transition-opacity"
+              coreArticles.map((a, idx) => {
+                const imgSrc =
+                  a.featured_image_url ||
+                  ARTICLE_FALLBACK_IMAGES[idx % ARTICLE_FALLBACK_IMAGES.length];
+                return (
+                  <Link
+                    key={a.id}
+                    href={`/${a.core_id}/${a.bridge_id}/${a.slug}/`}
+                    className="card card-hover overflow-hidden group flex flex-col"
                   >
-                    <path d="M2 6h8M7 3l3 3-3 3" />
-                  </svg>
-                </Link>
-              ))
+                    {/* Article image */}
+                    <div className="relative h-44 overflow-hidden bg-muted">
+                      <Image
+                        src={imgSrc}
+                        alt={a.h1_title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+
+                    {/* Article title */}
+                    <div className="flex items-start justify-between px-5 py-4 flex-1">
+                      <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors leading-snug">
+                        {a.h1_title}
+                      </span>
+                      <svg
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="shrink-0 ml-3 mt-0.5 w-3 h-3 text-accent opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <path d="M2 6h8M7 3l3 3-3 3" />
+                      </svg>
+                    </div>
+                  </Link>
+                );
+              })
             ) : (
               <div className="card px-5 py-4">
                 <span className="text-sm text-ds-text-muted">

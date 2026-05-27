@@ -37,17 +37,20 @@ export default async function PublishedPage() {
   }> = [];
 
   let coreKeywords: Array<{ id: string; keyword: string; core_id: string }> = [];
+  let bridgeKeywords: Array<{ id: string; keyword: string; bridge_id: string }> = [];
   let teamMembers: Array<{ name: string; role: string; bio: string; image_url: string }> = [];
 
   try {
     const supabase = createServiceClient();
-    const [articlesRes, coresRes, config] = await Promise.all([
+    const [articlesRes, coresRes, bridgesRes, config] = await Promise.all([
       supabase.from("articles").select("*").eq("status", "published").order("published_at", { ascending: false }),
       supabase.from("core_keywords").select("id, keyword, core_id").order("keyword"),
+      supabase.from("bridge_keywords").select("id, keyword, bridge_id").order("keyword"),
       getSiteConfig(),
     ]);
     articles = (articlesRes.data ?? []) as typeof articles;
     coreKeywords = (coresRes.data ?? []) as typeof coreKeywords;
+    bridgeKeywords = (bridgesRes.data ?? []) as typeof bridgeKeywords;
     teamMembers = config?.team_members ?? [];
   } catch (e) {
     console.error("[published page] DB error:", e);
@@ -67,7 +70,7 @@ export default async function PublishedPage() {
           )}
         </p>
       </div>
-      <PublishedClient articles={articles} coreKeywords={coreKeywords} teamMembers={teamMembers} />
+      <PublishedClient articles={articles} coreKeywords={coreKeywords} bridgeKeywords={bridgeKeywords} teamMembers={teamMembers} />
     </div>
   );
 }

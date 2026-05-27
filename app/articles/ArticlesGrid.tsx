@@ -27,6 +27,7 @@ interface ArticlesGridProps {
   currentPage: number;
   totalPages: number;
   totalCount: number;
+  selectedCore: string;
 }
 
 export default function ArticlesGrid({
@@ -35,15 +36,19 @@ export default function ArticlesGrid({
   currentPage,
   totalPages,
   totalCount,
+  selectedCore,
 }: ArticlesGridProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  const [selectedCore, setSelectedCore] = useState("");
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
 
-  // Sync search state if the URL param changes externally
+  // Build a lookup map for core keyword labels
+  const coreLabelMap = Object.fromEntries(
+    coreKeywords.map((c) => [c.core_id, c.keyword])
+  );
+
   useEffect(() => {
     setSearch(searchParams.get("q") ?? "");
   }, [searchParams]);
@@ -56,7 +61,6 @@ export default function ArticlesGrid({
     } else {
       params.delete("q");
     }
-    // Remove page param when searching
     params.delete("page");
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
@@ -66,13 +70,25 @@ export default function ArticlesGrid({
     handleSearchChange("");
   }
 
+  function handleCoreSelect(coreId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (coreId && coreId !== selectedCore) {
+      params.set("core", coreId);
+    } else {
+      params.delete("core");
+    }
+    params.delete("page");
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
+
+  // Search is the only remaining client-side filter (core is server-side)
   const filtered = articles.filter((a) => {
-    const matchesCore = selectedCore === "" || a.core_id === selectedCore;
-    const matchesSearch =
-      search === "" ||
+    if (search === "") return true;
+    return (
       a.h1_title.toLowerCase().includes(search.toLowerCase()) ||
-      a.primary_keyword.toLowerCase().includes(search.toLowerCase());
-    return matchesCore && matchesSearch;
+      a.primary_keyword.toLowerCase().includes(search.toLowerCase())
+    );
   });
 
   return (
@@ -80,7 +96,7 @@ export default function ArticlesGrid({
       {/* Core topic filter chips */}
       <div className="flex flex-wrap gap-2 mb-5">
         <button
-          onClick={() => setSelectedCore("")}
+          onClick={() => handleCoreSelect("")}
           className={selectedCore === "" ? "tag tag-ink" : "tag tag-ghost hover:tag"}
         >
           All topics
@@ -88,7 +104,7 @@ export default function ArticlesGrid({
         {coreKeywords.map((c) => (
           <button
             key={c.core_id}
-            onClick={() => setSelectedCore(selectedCore === c.core_id ? "" : c.core_id)}
+            onClick={() => handleCoreSelect(c.core_id)}
             className={selectedCore === c.core_id ? "tag tag-ink" : "tag tag-ghost"}
           >
             {c.keyword}
@@ -128,7 +144,7 @@ export default function ArticlesGrid({
           </button>
         )}
         <span className="text-meta ml-auto">
-          {search || selectedCore
+          {search
             ? `${filtered.length} of ${articles.length}`
             : `${totalCount} total`}{" "}
           article{totalCount !== 1 ? "s" : ""}
@@ -142,16 +158,23 @@ export default function ArticlesGrid({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard
+              key={article.id}
+              article={article}
+              coreLabel={coreLabelMap[article.core_id]}
+            />
           ))}
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && !search && !selectedCore && (
+      {/* Pagination — hidden while searching; core filter resets to page 1 so pagination still works */}
+      {totalPages > 1 && !search && (
         <div className="flex items-center justify-center gap-3 mt-12">
           {currentPage > 1 && (
-            <Link href={`/articles?page=${currentPage - 1}`} className="btn btn-secondary btn-sm">
+            <Link
+              href={selectedCore ? `/articles?core=${selectedCore}&page=${currentPage - 1}` : `/articles?page=${currentPage - 1}`}
+              className="btn btn-secondary btn-sm"
+            >
               ← Prev
             </Link>
           )}
@@ -159,7 +182,10 @@ export default function ArticlesGrid({
             Page {currentPage} of {totalPages}
           </span>
           {currentPage < totalPages && (
-            <Link href={`/articles?page=${currentPage + 1}`} className="btn btn-secondary btn-sm">
+            <Link
+              href={selectedCore ? `/articles?core=${selectedCore}&page=${currentPage + 1}` : `/articles?page=${currentPage + 1}`}
+              className="btn btn-secondary btn-sm"
+            >
               Next →
             </Link>
           )}

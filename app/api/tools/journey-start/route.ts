@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { callClaudeJSON } from "@/lib/anthropic";
 
-const SYSTEM = `You are a knowledgeable friend who has worked in real estate and mortgage lending for 20 years. You speak plainly, with zero jargon. You are not here to make people feel good — you're here to give them a clear, honest picture of where they are and what they should read first. You never hedge excessively. Sound like the most honest, helpful person in the room.`;
+const SYSTEM = `You are a knowledgeable friend who has worked as a licensed veterinarian for 20 years. You speak plainly, with zero jargon. You genuinely love animals and care about the people who care for them. You give honest, practical, science-backed guidance — not vague reassurances. You always meet people where they are, whether they have a new kitten or a senior dog, and you help them find exactly what they need to read next.`;
 
 interface ArticleRow {
   h1_title: string;
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     .map(([q, a]) => `Q: ${q}\nA: ${a}`)
     .join("\n\n");
 
-  const userPrompt = `A first-time homebuyer just answered 7 onboarding questions. Here are their answers:
+  const userPrompt = `A pet owner just answered 5 questions about their pet care situation. Here are their answers:
 
 ${answersText}
 
@@ -58,9 +58,9 @@ ${articleList}
 
 Based on their answers:
 
-1. Write a short personalized assessment (2–3 sentences, plain English, honest tone). Acknowledge where they are in the journey and one specific thing they should focus on next. Do not use bullet points here — just clear prose.
+1. Write a short personalized assessment (2–3 sentences, plain English, warm but honest tone). Acknowledge what type of pet owner they are and what they're dealing with, and name one specific thing they should focus on next. Do not use bullet points — just clear, caring prose.
 
-2. Choose exactly 3 articles from the list above that are the most relevant to this specific person's situation, stage, and concerns. For each article, write a 1-sentence reason why it was chosen for them specifically (not generic — reference their actual answers).
+2. Choose exactly 3 articles from the list above that are the most relevant to this specific person's pet, life stage, and concerns. For each article, write a 1-sentence reason why it was chosen for them specifically (not generic — reference their actual pet situation from the answers).
 
 Return ONLY valid JSON in this exact shape, no markdown fences:
 {

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 import { createReadClient } from "@/lib/supabase/server";
 import ArticlesGrid from "./ArticlesGrid";
 import { siteUrl } from "@/lib/site-url";
@@ -48,9 +50,10 @@ export async function generateMetadata({
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: { page?: string; core?: string };
 }) {
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10));
+  const coreFilter = searchParams.core ?? "";
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
@@ -75,24 +78,40 @@ export default async function ArticlesPage({
 
   try {
     const supabase = createReadClient();
+
+    let articlesQuery = supabase
+      .from("articles")
+      .select(
+        "id, article_id, h1_title, content_type, primary_keyword, core_id, bridge_id, slug, body_markdown, is_core_article, published_at, featured_image_url, featured_image_alt"
+      )
+      .eq("status", "published")
+      .not("slug", "is", null)
+      .not("core_id", "is", null)
+      .not("bridge_id", "is", null)
+      .neq("slug", "")
+      .order("is_core_article", { ascending: false })
+      .order("published_at", { ascending: false });
+
+    if (coreFilter) {
+      articlesQuery = articlesQuery.eq("core_id", coreFilter);
+    }
+
+    let countQuery = supabase
+      .from("articles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "published")
+      .not("slug", "is", null)
+      .not("core_id", "is", null)
+      .not("bridge_id", "is", null)
+      .neq("slug", "");
+
+    if (coreFilter) {
+      countQuery = countQuery.eq("core_id", coreFilter);
+    }
+
     const [articlesRes, countRes, coresRes] = await Promise.all([
-      supabase
-        .from("articles")
-        .select(
-          "id, article_id, h1_title, content_type, primary_keyword, core_id, bridge_id, slug, body_markdown, is_core_article, published_at, featured_image_url, featured_image_alt"
-        )
-        .eq("status", "published")
-        .not("slug", "is", null)
-        .not("core_id", "is", null)
-        .not("bridge_id", "is", null)
-        .neq("slug", "")
-        .order("is_core_article", { ascending: false })
-        .order("published_at", { ascending: false })
-        .range(from, to),
-      supabase
-        .from("articles")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "published"),
+      articlesQuery.range(from, to),
+      countQuery,
       supabase.from("core_keywords").select("core_id, keyword").order("keyword"),
     ]);
     articles = articlesRes.data ?? [];
@@ -108,7 +127,7 @@ export default async function ArticlesPage({
     <div className="max-w-[1280px] mx-auto px-6 md:px-14 py-12">
       <div className="mb-10">
         <p className="text-eyebrow mb-3">Resources</p>
-        <h1 className="text-display text-foreground">Articles</h1>
+        <h1 className="text-display text-foreground">articles</h1>
       </div>
       <Suspense fallback={null}>
         <ArticlesGrid
@@ -117,6 +136,7 @@ export default async function ArticlesPage({
           currentPage={page}
           totalPages={totalPages}
           totalCount={totalCount}
+          selectedCore={coreFilter}
         />
       </Suspense>
     </div>

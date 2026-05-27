@@ -31,13 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
-    // Uncomment when the /tools page has real content and its robots: noindex is removed:
-    // {
-    //   url: `${siteUrl}/tools/`,
-    //   lastModified: new Date(),
-    //   changeFrequency: "monthly",
-    //   priority: 0.7,
-    // },
+    {
+      url: `${siteUrl}/tools/`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     // /resources/ is intentionally excluded — page sets robots: noindex
   ];
 

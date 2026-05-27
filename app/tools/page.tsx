@@ -3,58 +3,52 @@ import Link from "next/link";
 import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Tools",
-  description: "Free calculators and AI-powered tools to help first-time homebuyers understand costs, check readiness, and build a plan.",
+  title: "Pet Owner Tools",
+  description: "Free calculators and AI-powered tools to help pet owners understand costs, check pet health, find the right breed, and build a care plan.",
   alternates: { canonical: `${siteUrl}/tools/` },
 };
 
 const TOOLS = [
   {
-    href: "/tools/home-tracker",
-    name: "Home Tracker",
-    description: "Track your inspection, title, insurance, mortgage, and every other step of your purchase — all in one place, with an AI assistant on call.",
-    tag: "AI-Powered",
-  },
-  {
-    href: "/tools/mortgage-breakdown",
-    name: "Mortgage Payment Breakdown",
-    description: "See exactly where your monthly payment goes — principal, interest, PMI, taxes, and insurance.",
+    href: "/tools/pet-age-calculator",
+    name: "Pet Age Calculator",
+    description: "Convert your dog or cat's age to human years — with breed-specific adjustments so the result is actually accurate.",
     tag: "Calculator",
   },
   {
-    href: "/tools/closing-cost-estimator",
-    name: "Closing Cost Estimator",
-    description: "Itemized estimate of every closing cost with a plain-English explanation of what each one actually is.",
+    href: "/tools/pet-food-calculator",
+    name: "Pet Food Portion Calculator",
+    description: "Get a daily feeding recommendation based on your pet's species, weight, age, and activity level — no guesswork.",
     tag: "Calculator",
   },
   {
-    href: "/tools/rent-vs-buy",
-    name: "Rent vs. Buy (Honest Edition)",
-    description: "The real math on renting vs. buying over your timeline. No cheerleading — if renting wins, it'll say so.",
+    href: "/tools/pet-cost-estimator",
+    name: "Annual Pet Cost Estimator",
+    description: "See a full breakdown of what owning your specific pet actually costs per year — food, vet bills, grooming, and more.",
     tag: "Calculator",
   },
   {
-    href: "/tools/credit-score-translator",
-    name: "Credit Score Translator",
-    description: "Enter your score and get a plain-English breakdown of what it means for loan types, rates, and your options.",
+    href: "/tools/pet-insurance-advisor",
+    name: "Pet Insurance Advisor",
+    description: "Describe your pet and your budget. Get a plain-English recommendation on what type of coverage actually makes sense for you.",
     tag: "AI-Powered",
   },
   {
-    href: "/tools/affordability-check",
-    name: "Affordability Reality Check",
-    description: "Plug in your income, debt, and savings. Get an honest picture of what you can actually afford.",
+    href: "/tools/symptom-checker",
+    name: "Symptom Urgency Checker",
+    description: "Describe what you're noticing in your pet and get an honest read on whether it's a wait-and-watch situation or a same-day vet call.",
     tag: "AI-Powered",
   },
   {
-    href: "/tools/ready-assessment",
-    name: '"Am I Ready?" Assessment',
-    description: "A 10-question quiz that produces the most honest readiness verdict you'll get from anyone in real estate.",
+    href: "/tools/adoption-readiness",
+    name: '"Am I Ready?" Pet Quiz',
+    description: "A 10-question quiz that gives you a straight verdict on whether your lifestyle, budget, and home are a real fit for a new pet.",
     tag: "AI-Powered",
   },
   {
-    href: "/tools/timeline-builder",
-    name: "Timeline Builder",
-    description: "Tell us your move-in goal. Get a month-by-month action plan built specifically for your situation.",
+    href: "/tools/breed-finder",
+    name: "Breed Compatibility Finder",
+    description: "Tell us about your living situation, activity level, and preferences. Get matched with breeds that actually suit your life.",
     tag: "AI-Powered",
   },
 ];
@@ -64,10 +58,10 @@ export default function ToolsPage() {
     <div className="max-w-[1280px] mx-auto px-6 md:px-8 py-12">
       <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-3">tools</p>
       <h1 className="text-2xl md:text-3xl font-extralight tracking-tight text-foreground mb-2">
-        Homebuyer tools
+        Pet owner tools
       </h1>
       <p className="text-sm font-light text-muted-foreground mb-10 max-w-xl">
-        Calculators and AI-powered tools that give you straight answers — no sales pitch, no fluff.
+        Calculators and AI-powered tools that give you straight answers about your pet's health, costs, and care.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

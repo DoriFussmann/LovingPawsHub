@@ -17,6 +17,7 @@ interface ArticleCardProps {
     featured_image_url?: string | null;
     featured_image_alt?: string | null;
   };
+  coreLabel?: string;
 }
 
 function estimateReadingTime(markdown: string): string {
@@ -42,7 +43,7 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
   CORE:       "core",
 };
 
-export default function ArticleCard({ article }: ArticleCardProps) {
+export default function ArticleCard({ article, coreLabel }: ArticleCardProps) {
   const readingTime = estimateReadingTime(article.body_markdown);
   const href = `/${article.core_id}/${article.bridge_id}/${article.slug}/`;
   const typeLabel = CONTENT_TYPE_LABELS[article.content_type] ?? article.content_type.toLowerCase();
@@ -70,6 +71,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         <div className="p-5 flex flex-col gap-3 flex-1">
           {/* Tags */}
           <div className="flex items-center gap-2 flex-wrap">
+            {coreLabel && <span className="tag tag-ghost">{coreLabel}</span>}
             <span className="tag">{typeLabel}</span>
           </div>
 

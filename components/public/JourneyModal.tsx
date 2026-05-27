@@ -15,81 +15,61 @@ interface Question {
 
 const QUESTIONS: Question[] = [
   {
-    id: "stage",
-    question: "Where are you right now in your homebuying journey?",
+    id: "pet_type",
+    question: "Are you a cat person, a dog person — or both?",
     options: [
-      "Just starting to think about it — still early",
-      "Actively researching — learning everything I can",
-      "Ready to start taking action (lenders, agents, showings)",
-      "I've started but feel stuck or overwhelmed",
+      "Dog person — dogs are my world",
+      "Cat person — cats are my world",
+      "Both! I have (or want) cats and dogs",
+      "I'm thinking about getting my very first pet",
     ],
   },
   {
-    id: "reason",
-    question: "What's your main reason for being here today?",
+    id: "current_pets",
+    question: "Do you currently have pets at home?",
     options: [
-      "I want to understand the full process from start to finish",
-      "I'm trying to figure out if I can actually afford it",
-      "I need help with credit, savings, or finances",
-      "I don't know where to start — I need a clear roadmap",
+      "Yes — one cat or a few cats",
+      "Yes — one dog or a few dogs",
+      "Yes — multiple pets (mix of cats, dogs, or others)",
+      "Not yet, but I'm seriously considering it",
     ],
   },
   {
-    id: "timeline",
-    question: "What's your target timeline to buy?",
+    id: "adoption",
+    question: "Are you thinking about adopting or getting a new pet soon?",
     options: [
-      "Within the next 3 months",
-      "3–6 months from now",
-      "6–12 months from now",
-      "1–2 years away, or I'm not sure yet",
+      "I'm actively looking to adopt right now",
+      "I'm thinking about it but haven't committed yet",
+      "I already have my pet(s) — not looking to add more",
+      "Not in my plans at the moment",
     ],
   },
   {
-    id: "situation",
-    question: "What's your current living situation?",
+    id: "pet_age",
+    question: "What life stage is your pet (or the one you're interested in)?",
     options: [
-      "Renting — my lease gives me flexibility",
-      "Renting — I'm locked in for a while",
-      "Living with family or friends",
-      "I own and need to sell or coordinate timing",
+      "Kitten or puppy — under 1 year old",
+      "Young adult — 1 to 4 years old",
+      "Adult — 5 to 9 years old",
+      "Senior — 10 years and older",
     ],
   },
   {
     id: "concern",
-    question: "What's your biggest concern right now?",
+    question: "What's your biggest pet care question right now?",
     options: [
-      "Whether I can actually afford a home in my area",
-      "My credit score or financial history",
-      "Understanding the process — there's too much I don't know",
-      "Finding the right home, neighborhood, or market",
-    ],
-  },
-  {
-    id: "lender",
-    question: "Have you started talking to a lender or gotten pre-approved?",
-    options: [
-      "Yes — I'm pre-approved and ready to shop",
-      "I've talked to a lender but haven't applied yet",
-      "No — I haven't started that process yet",
-      "I don't really understand what pre-approval means",
-    ],
-  },
-  {
-    id: "help",
-    question: "What kind of help are you most hoping to find here?",
-    options: [
-      "Step-by-step guidance on what to do next",
-      "Clear explanations of the financial side — loans, costs, budgets",
-      "Honest answers to questions I'm embarrassed to ask",
-      "Practical checklists or tools I can act on today",
+      "Nutrition — what to feed them and how often",
+      "Health and vet care — checkups, vaccines, and signs to watch for",
+      "Behavior and training — getting them to listen (or just understand them better)",
+      "General wellness — keeping them happy, active, and thriving long-term",
     ],
   },
 ];
 
 const LOADER_LABELS = [
-  "Mapping your journey…",
-  "Finding the right starting points…",
-  "Putting it together…",
+  "Thinking about your pet…",
+  "Finding the most relevant articles…",
+  "Putting it all together…",
   "Almost ready…",
 ];
 
@@ -260,10 +240,10 @@ export default function JourneyModal({ open, onClose }: JourneyModalProps) {
               {/* Header */}
               <div className="mb-8">
                 <p className="text-[10px] tracking-widest uppercase text-foreground/30 mb-2">
-                  your first home journey
+                  personalized pet care
                 </p>
                 <h2 className="text-lg font-light text-foreground leading-snug">
-                  Let&apos;s find where to start
+                  Let&apos;s find the right articles for you
                 </h2>
               </div>
 
@@ -348,7 +328,7 @@ export default function JourneyModal({ open, onClose }: JourneyModalProps) {
                     {/* Assessment */}
                     <div className="bg-muted/30 border border-border rounded-md p-5 mb-6">
                       <p className="text-[10px] tracking-widest uppercase text-foreground/40 mb-3">
-                        your starting point
+                        your pet care profile
                       </p>
                       <p className="text-sm font-light text-foreground/90 leading-relaxed">
                         {result.assessment}
